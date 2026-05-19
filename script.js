@@ -114,7 +114,7 @@ document.getElementById('connectGhBtn').onclick = () => {
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     
     if(!ghToken || !ghRepo) {
-        apiStatusLog.textContent = "Status: Token or Repo path is empty!";
+        if(apiStatusLog) apiStatusLog.textContent = "Status: Token or Repo path is empty!";
         return;
     }
     localStorage.setItem('rrb_git_token', ghToken);
@@ -127,11 +127,10 @@ async function syncCloudRepositoryBankList() {
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     if (!ghToken || !ghRepo) return;
 
-    apiStatusLog.textContent = "Status: Authenticating with GitHub...";
+    if(apiStatusLog) apiStatusLog.textContent = "Status: Authenticating with GitHub...";
     cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#718096; font-size:0.85rem;">Connecting...</div>`;
     
     try {
-        // FIXED: Using standard Bearer Token formatting along with mandatory API User-Agent criteria
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${targetFolder}`, {
             headers: { 
                 'Authorization': `Bearer ${ghToken}`, 
@@ -140,25 +139,22 @@ async function syncCloudRepositoryBankList() {
         });
         
         if (res.status === 404) {
-            apiStatusLog.textContent = "Status: Connected! Folder empty.";
+            if(apiStatusLog) apiStatusLog.textContent = "Status: Connected! Folder empty.";
             cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#a0aec0; font-size:0.85rem;">No files on cloud yet. Upload a file below to populate this folder!</div>`;
             return;
         }
 
-        if (res.status === 401 || res.status === 403) {
-            apiStatusLog.textContent = `Status: Auth Rejected (Error ${res.status})`;
-            cloudBankFilesContainer.innerHTML = `<div style="color:red; text-align:center; padding:10px;">Bad Credentials or Expired Token!</div>`;
-            return;
-        }
-
+        // NEW DETAILED DEBUG ALERT DIALOGS
         if (!res.ok) {
+            const textError = await res.text();
+            alert(`GitHub API Error Code: ${res.status}\nMessage: ${textError}`);
             throw new Error(`HTTP Error ${res.status}`);
         }
 
         const files = await res.json();
         const jsonFiles = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json')) : [];
 
-        apiStatusLog.textContent = `Status: Active (${jsonFiles.length} files found)`;
+        if(apiStatusLog) apiStatusLog.textContent = `Status: Active (${jsonFiles.length} files found)`;
 
         if(jsonFiles.length === 0) {
             cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#a0aec0; font-size:0.85rem;">No JSON files inside folder.</div>`;
@@ -180,13 +176,13 @@ async function syncCloudRepositoryBankList() {
             cloudBankFilesContainer.appendChild(row);
         });
     } catch (err) {
-        apiStatusLog.textContent = `Status Error: ${err.message}`;
-        cloudBankFilesContainer.innerHTML = `<div style="color:#e53e3e; text-align:center; padding:10px;">Connection failed. Check settings.</div>`;
+        if(apiStatusLog) apiStatusLog.textContent = `Status Error: ${err.message}`;
+        cloudBankFilesContainer.innerHTML = `<div style="color:#e53e3e; text-align:center; padding:10px;">Connection failed. Check token configuration scopes.</div>`;
     }
 }
 
 async function loadRemoteJsonBank(path) {
-    apiStatusLog.textContent = `Status: Downloading ${path.split('/').pop()}...`;
+    if(apiStatusLog) apiStatusLog.textContent = `Status: Downloading ${path.split('/').pop()}...`;
     try {
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
             headers: { 
@@ -200,11 +196,11 @@ async function loadRemoteJsonBank(path) {
             startExamBtn.removeAttribute('disabled');
             questionLimitInput.max = fileQuestions.length;
             questionLimitInput.value = Math.min(20, fileQuestions.length);
-            apiStatusLog.textContent = "Status: File loaded into memory!";
+            if(apiStatusLog) apiStatusLog.textContent = "Status: File loaded into memory!";
             alert(`Loaded successfully! Ready to start.`);
         }
     } catch(err) { 
-        apiStatusLog.textContent = "Status: Download failed.";
+        if(apiStatusLog) apiStatusLog.textContent = "Status: Download failed.";
         alert("Failed downloading data configuration."); 
     }
 }
@@ -214,7 +210,7 @@ async function pushJsonBankToCloud(fileName, stringContent) {
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     if (!ghToken || !ghRepo) return;
 
-    apiStatusLog.textContent = "Status: Uploading file to GitHub repository...";
+    if(apiStatusLog) apiStatusLog.textContent = "Status: Uploading file to GitHub repository...";
 
     const base64Content = btoa(encodeURIComponent(stringContent).replace(/%([0-9A-F]{2})/g, function(match, p1) {
         return String.fromCharCode('0x' + p1);
@@ -235,14 +231,14 @@ async function pushJsonBankToCloud(fileName, stringContent) {
             })
         });
         if (res.ok) {
-            apiStatusLog.textContent = "Status: Uploaded successfully!";
+            if(apiStatusLog) apiStatusLog.textContent = "Status: Uploaded successfully!";
             setTimeout(syncCloudRepositoryBankList, 1500); 
         } else {
             const errData = await res.json();
-            apiStatusLog.textContent = `Upload Error: ${errData.message}`;
+            alert(`Upload Denied: ${errData.message}`);
         }
     } catch (err) { 
-        apiStatusLog.textContent = `Upload Exception: ${err.message}`;
+        if(apiStatusLog) apiStatusLog.textContent = `Upload Exception: ${err.message}`;
     }
 }
 
@@ -251,7 +247,7 @@ window.deleteRemoteJsonBank = async function(path, sha) {
     
     ghToken = document.getElementById('ghTokenInput').value.trim();
     ghRepo = document.getElementById('ghRepoInput').value.trim();
-    apiStatusLog.textContent = "Status: Deleting file...";
+    if(apiStatusLog) apiStatusLog.textContent = "Status: Deleting file...";
 
     try {
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
@@ -266,28 +262,30 @@ window.deleteRemoteJsonBank = async function(path, sha) {
             })
         });
         if(res.ok) {
-            apiStatusLog.textContent = "Status: File deleted.";
+            if(apiStatusLog) apiStatusLog.textContent = "Status: File deleted.";
             startExamBtn.setAttribute('disabled', true);
             setTimeout(syncCloudRepositoryBankList, 1000);
         } else {
-            apiStatusLog.textContent = "Status: Deletion rejected.";
+            if(apiStatusLog) apiStatusLog.textContent = "Status: Deletion rejected.";
         }
     } catch (err) { alert("API connection failure."); }
 }
 
 // --- CONFIGURATIONS INTERFACE LISTENERS ---
-document.querySelectorAll('input[name="timerMode"]').forEach(radio => {
-    radio.addEventListener('change', (e) => {
-        timerMode = e.target.value;
-        if (timerMode === 'overall') {
-            timerInput.value = 30; 
-            timerInputCaption.textContent = "Duration (Total test time in minutes)";
-        } else {
-            timerInput.value = 60;
-            timerInputCaption.textContent = "Duration (Seconds per question)";
-        }
+if(timerInput) {
+    document.querySelectorAll('input[name="timerMode"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            timerMode = e.target.value;
+            if (timerMode === 'overall') {
+                timerInput.value = 30; 
+                timerInputCaption.textContent = "Duration (Total test time in minutes)";
+            } else {
+                timerInput.value = 60;
+                timerInputCaption.textContent = "Duration (Seconds per question)";
+            }
+        });
     });
-});
+}
 
 fileUploader.addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -590,8 +588,10 @@ function completeExamValidation() {
 
 // --- FLOATING SCIENTIFIC CALCULATOR ---
 const calcPad = document.getElementById('floatingCalculator');
-document.getElementById('calcToggleBtn').onclick = () => calcPad.classList.toggle('hidden');
-document.getElementById('calcCloseBtn').onclick = () => calcPad.classList.add('hidden');
+if(document.getElementById('calcToggleBtn')) {
+    document.getElementById('calcToggleBtn').onclick = () => calcPad.classList.toggle('hidden');
+    document.getElementById('calcCloseBtn').onclick = () => calcPad.classList.add('hidden');
+}
 
 let calcExpression = "";
 window.pressCalcKey = function(key) {
@@ -613,8 +613,10 @@ window.pressCalcKey = function(key) {
     }
 }
 
-document.getElementById('restartBtn').onclick = () => {
-    resultScreen.classList.add('hidden'); configScreen.classList.remove('hidden');
-    fileUploader.value = ''; startExamBtn.setAttribute('disabled', true);
-    syncCloudRepositoryBankList();
-};
+if(document.getElementById('restartBtn')) {
+    document.getElementById('restartBtn').onclick = () => {
+        resultScreen.classList.add('hidden'); configScreen.classList.remove('hidden');
+        fileUploader.value = ''; startExamBtn.setAttribute('disabled', true);
+        syncCloudRepositoryBankList();
+    };
+}
