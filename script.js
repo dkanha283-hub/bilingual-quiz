@@ -131,24 +131,27 @@ async function syncCloudRepositoryBankList() {
     cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#718096; font-size:0.85rem;">Connecting...</div>`;
     
     try {
-        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${targetFolder}`, {
-            headers: { 
-                'Authorization': `Bearer ${ghToken}`, 
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
+        // FIXED: Using standardized header authentication configuration formats
+        const headers = {
+            'Accept': 'application/vnd.github.v3+json'
+        };
+        if (ghToken) {
+            headers['Authorization'] = `token ${ghToken}`;
+        }
+
+        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${targetFolder}`, { headers });
         
         if (res.status === 404) {
             if(apiStatusLog) apiStatusLog.textContent = "Status: Connected! Folder empty.";
-            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#a0aec0; font-size:0.85rem;">No files on cloud yet. Upload a file below to populate this folder!</div>`;
+            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#a0aec0; font-size:0.85rem;">No cloud files synced yet. Upload a local file below to populate this folder!</div>`;
             return;
         }
 
-        // NEW DETAILED DEBUG ALERT DIALOGS
         if (!res.ok) {
             const textError = await res.text();
-            alert(`GitHub API Error Code: ${res.status}\nMessage: ${textError}`);
-            throw new Error(`HTTP Error ${res.status}`);
+            if(apiStatusLog) apiStatusLog.textContent = `Status: Error ${res.status}`;
+            cloudBankFilesContainer.innerHTML = `<div style="color:red; text-align:center; padding:5px; font-size:0.8rem;">GitHub Server Message: ${res.statusText}</div>`;
+            return;
         }
 
         const files = await res.json();
@@ -176,20 +179,18 @@ async function syncCloudRepositoryBankList() {
             cloudBankFilesContainer.appendChild(row);
         });
     } catch (err) {
-        if(apiStatusLog) apiStatusLog.textContent = `Status Error: ${err.message}`;
-        cloudBankFilesContainer.innerHTML = `<div style="color:#e53e3e; text-align:center; padding:10px;">Connection failed. Check token configuration scopes.</div>`;
+        if(apiStatusLog) apiStatusLog.textContent = `Error: ${err.message}`;
+        cloudBankFilesContainer.innerHTML = `<div style="color:#e53e3e; text-align:center; padding:10px; font-size:0.8rem;">Connection failed. Check settings details.</div>`;
     }
 }
 
 async function loadRemoteJsonBank(path) {
     if(apiStatusLog) apiStatusLog.textContent = `Status: Downloading ${path.split('/').pop()}...`;
     try {
-        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
-            headers: { 
-                'Authorization': `Bearer ${ghToken}`, 
-                'Accept': 'application/vnd.github.v3.raw'
-            }
-        });
+        const headers = { 'Accept': 'application/vnd.github.v3.raw' };
+        if (ghToken) headers['Authorization'] = `token ${ghToken}`;
+
+        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, { headers });
         const data = await res.json();
         fileQuestions = Array.isArray(data) ? data : (data.questions || []);
         if (fileQuestions.length > 0) {
@@ -222,7 +223,7 @@ async function pushJsonBankToCloud(fileName, stringContent) {
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
             method: 'PUT',
             headers: { 
-                'Authorization': `Bearer ${ghToken}`, 
+                'Authorization': `token ${ghToken}`, 
                 'Content-Type': 'application/json' 
             },
             body: JSON.stringify({
@@ -235,7 +236,7 @@ async function pushJsonBankToCloud(fileName, stringContent) {
             setTimeout(syncCloudRepositoryBankList, 1500); 
         } else {
             const errData = await res.json();
-            alert(`Upload Denied: ${errData.message}`);
+            if(apiStatusLog) apiStatusLog.textContent = `Upload Error: ${errData.message}`;
         }
     } catch (err) { 
         if(apiStatusLog) apiStatusLog.textContent = `Upload Exception: ${err.message}`;
@@ -253,7 +254,7 @@ window.deleteRemoteJsonBank = async function(path, sha) {
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
             method: 'DELETE',
             headers: { 
-                'Authorization': `Bearer ${ghToken}`, 
+                'Authorization': `token ${ghToken}`, 
                 'Content-Type': 'application/json' 
             },
             body: JSON.stringify({
