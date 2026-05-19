@@ -34,6 +34,7 @@ const optionsContainer = document.getElementById('optionsContainer');
 const paletteGrid = document.getElementById('paletteGrid');
 const consoleLangPref = document.getElementById('consoleLangPref');
 const cloudBankFilesContainer = document.getElementById('cloudBankFilesContainer');
+const apiStatusLog = document.getElementById('apiStatusLog');
 
 // --- RESUMABLE AUTO-SAVE ENGINE (LOCAL STORAGE) ---
 window.addEventListener('DOMContentLoaded', () => {
@@ -83,7 +84,7 @@ document.getElementById('resumeConfirmBtn').onclick = () => {
         consoleLangPref.value = localStorage.getItem('rrb_quiz_consoleLangPref');
 
         configScreen.classList.add('hidden');
-        examConsole.remove('hidden');
+        examConsole.classList.remove('hidden');
         
         buildPaletteGridUI();
         renderQuestionIndex();
@@ -99,7 +100,7 @@ document.getElementById('resumeRejectBtn').onclick = () => {
     wipeSessionProgressCache();
 };
 
-// --- DYNAMIC GITHUB API SYNCHRONIZATION ENGINE ---
+// --- GITHUB API SYNCHRONIZATION ENGINE ---
 function loadCachedGithubCredentials() {
     if(localStorage.getItem('rrb_git_token')) {
         document.getElementById('ghTokenInput').value = localStorage.getItem('rrb_git_token');
@@ -113,7 +114,7 @@ document.getElementById('connectGhBtn').onclick = () => {
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     
     if(!ghToken || !ghRepo) {
-        alert("Please map accurate Token and Repository string paths securely.");
+        apiStatusLog.textContent = "Status: Token or Repo path is empty!";
         return;
     }
     localStorage.setItem('rrb_git_token', ghToken);
@@ -126,32 +127,40 @@ async function syncCloudRepositoryBankList() {
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     if (!ghToken || !ghRepo) return;
 
-    cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#718096; font-size:0.85rem;">Connecting to GitHub...</div>`;
+    apiStatusLog.textContent = "Status: Authenticating with GitHub...";
+    cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#718096; font-size:0.85rem;">Connecting...</div>`;
     
     try {
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${targetFolder}`, {
             headers: { 
-                'Authorization': `token ${ghToken}`, 
-                'Accept': 'application/vnd.github.v3+json',
-                'Cache-Control': 'no-cache'
+                'Authorization': `Bearer ${ghToken}`, 
+                'Accept': 'application/vnd.github.v3+json'
             }
         });
         
-        // FIXED: Gracefully handle an empty or non-existent folder without crashing
         if (res.status === 404) {
-            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#a0aec0; font-size:0.85rem;">No cloud files synced yet. Upload a local file below to create your bank folder!</div>`;
+            apiStatusLog.textContent = "Status: Connected! Folder empty.";
+            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#a0aec0; font-size:0.85rem;">No files on cloud yet. Upload a file below to populate this folder!</div>`;
+            return;
+        }
+
+        if (res.status === 401) {
+            apiStatusLog.textContent = "Status: 401 Unauthorized (Bad Token)";
+            cloudBankFilesContainer.innerHTML = `<div style="color:red; text-align:center; padding:10px;">Invalid GitHub Token!</div>`;
             return;
         }
 
         if (!res.ok) {
-            throw new Error(`GitHub API responded with status ${res.status}`);
+            throw new Error(`HTTP Error ${res.status}`);
         }
 
         const files = await res.json();
         const jsonFiles = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json')) : [];
 
+        apiStatusLog.textContent = `Status: Active (${jsonFiles.length} files found)`;
+
         if(jsonFiles.length === 0) {
-            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#a0aec0; font-size:0.85rem;">No JSON banks discovered inside repository.</div>`;
+            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#a0aec0; font-size:0.85rem;">No JSON files inside folder.</div>`;
             return;
         }
 
@@ -160,28 +169,28 @@ async function syncCloudRepositoryBankList() {
             const row = document.createElement('div');
             row.className = 'cloud-file-row';
             row.innerHTML = `
-                <span class="cloud-file-name" data-path="${file.path}">${file.name}</span>
-                <button class="cloud-file-delete" data-path="${file.path}" data-sha="${file.sha}">×</button>
+                <span class="cloud-file-name">${file.name}</span>
+                <button class="cloud-file-delete">×</button>
             `;
             
-            // FIXED: Standardize event attachments instead of inline wrappers
             row.querySelector('.cloud-file-name').onclick = () => loadRemoteJsonBank(file.path);
             row.querySelector('.cloud-file-delete').onclick = () => deleteRemoteJsonBank(file.path, file.sha);
             
             cloudBankFilesContainer.appendChild(row);
         });
     } catch (err) {
-        cloudBankFilesContainer.innerHTML = `<div style="color:#e53e3e; font-size:0.8rem; padding:10px; font-weight:bold;">Error: Verify token validity or repository name format.</div>`;
+        apiStatusLog.textContent = `Status Error: ${err.message}`;
+        cloudBankFilesContainer.innerHTML = `<div style="color:#e53e3e; text-align:center; padding:10px;">Connection failed. Check settings.</div>`;
     }
 }
 
 async function loadRemoteJsonBank(path) {
+    apiStatusLog.textContent = `Status: Downloading ${path.split('/').pop()}...`;
     try {
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
             headers: { 
-                'Authorization': `token ${ghToken}`, 
-                'Accept': 'application/vnd.github.v3.raw',
-                'Cache-Control': 'no-cache'
+                'Authorization': `Bearer ${ghToken}`, 
+                'Accept': 'application/vnd.github.v3.raw'
             }
         });
         const data = await res.json();
@@ -190,9 +199,13 @@ async function loadRemoteJsonBank(path) {
             startExamBtn.removeAttribute('disabled');
             questionLimitInput.max = fileQuestions.length;
             questionLimitInput.value = Math.min(20, fileQuestions.length);
-            alert(`Loaded: ${path.split('/').pop()} successfully! Tap 'Start Exam' below.`);
+            apiStatusLog.textContent = "Status: File loaded into memory!";
+            alert(`Loaded successfully! Ready to start.`);
         }
-    } catch(err) { alert("Failed downloading the question bank data."); }
+    } catch(err) { 
+        apiStatusLog.textContent = "Status: Download failed.";
+        alert("Failed downloading data configuration."); 
+    }
 }
 
 async function pushJsonBankToCloud(fileName, stringContent) {
@@ -200,7 +213,8 @@ async function pushJsonBankToCloud(fileName, stringContent) {
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     if (!ghToken || !ghRepo) return;
 
-    // FIXED: Mobile-friendly safe UTF-8 base64 converter encoding string
+    apiStatusLog.textContent = "Status: Uploading file to GitHub repository...";
+
     const base64Content = btoa(encodeURIComponent(stringContent).replace(/%([0-9A-F]{2})/g, function(match, p1) {
         return String.fromCharCode('0x' + p1);
     }));
@@ -211,49 +225,56 @@ async function pushJsonBankToCloud(fileName, stringContent) {
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
             method: 'PUT',
             headers: { 
-                'Authorization': `token ${ghToken}`, 
+                'Authorization': `Bearer ${ghToken}`, 
                 'Content-Type': 'application/json' 
             },
             body: JSON.stringify({
-                message: `Add question bank: ${fileName}`,
+                message: `Upload bank: ${fileName}`,
                 content: base64Content
             })
         });
         if (res.ok) {
-            setTimeout(syncCloudRepositoryBankList, 1500); // Wait briefly for GitHub servers to cache directory tree
+            apiStatusLog.textContent = "Status: Uploaded successfully!";
+            setTimeout(syncCloudRepositoryBankList, 1500); 
+        } else {
+            const errData = await res.json();
+            apiStatusLog.textContent = `Upload Error: ${errData.message}`;
         }
-    } catch (err) { console.error("Cloud push failed:", err); }
+    } catch (err) { 
+        apiStatusLog.textContent = `Upload Exception: ${err.message}`;
+    }
 }
 
 window.deleteRemoteJsonBank = async function(path, sha) {
-    if(!confirm("Are you sure you want to completely erase this file from GitHub and your UI view?")) return;
+    if(!confirm("Erase this file from GitHub?")) return;
     
     ghToken = document.getElementById('ghTokenInput').value.trim();
     ghRepo = document.getElementById('ghRepoInput').value.trim();
+    apiStatusLog.textContent = "Status: Deleting file...";
 
     try {
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
             method: 'DELETE',
             headers: { 
-                'Authorization': `token ${ghToken}`, 
+                'Authorization': `Bearer ${ghToken}`, 
                 'Content-Type': 'application/json' 
             },
             body: JSON.stringify({
-                message: `Delete database item: ${path}`,
+                message: `Delete item: ${path}`,
                 sha: sha
             })
         });
         if(res.ok) {
-            alert("File removed from GitHub successfully.");
+            apiStatusLog.textContent = "Status: File deleted.";
             startExamBtn.setAttribute('disabled', true);
             setTimeout(syncCloudRepositoryBankList, 1000);
         } else {
-            alert("Error deleting file. Your token might lack full 'repo' scope deletion capabilities.");
+            apiStatusLog.textContent = "Status: Deletion rejected.";
         }
     } catch (err) { alert("API connection failure."); }
 }
 
-// --- STANDARD CONFIGURATIONS INTERFACE LISTENERS ---
+// --- CONFIGURATIONS INTERFACE LISTENERS ---
 document.querySelectorAll('input[name="timerMode"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
         timerMode = e.target.value;
@@ -281,9 +302,10 @@ fileUploader.addEventListener('change', (e) => {
                 questionLimitInput.max = fileQuestions.length;
                 questionLimitInput.value = Math.min(20, fileQuestions.length);
                 
+                // If token is connected, try saving to cloud. If not, it still runs beautifully locally!
                 pushJsonBankToCloud(file.name, rawText);
             }
-        } catch(e) { alert("JSON file validation error."); }
+        } catch(e) { alert("JSON validation error."); }
     };
     reader.readAsText(file);
 });
