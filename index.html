@@ -25,10 +25,11 @@
             <hr>
 
             <div class="setup-group github-config-box">
-                <label>⛓️ GitHub API Sync Configurations (Optional):</label>
-                <input type="password" id="ghTokenInput" placeholder="Enter GitHub Personal Access Token (PAT)">
-                <input type="text" id="ghRepoInput" placeholder="Username/Repository (e.g., dkanha283-hub/bilingual-quiz)" value="dkanha283-hub/bilingual-quiz">
-                <button id="connectGhBtn" class="tcs-btn tcs-btn-gray" style="margin-top:5px; padding:6px;">Connect & Fetch Shared Banks</button>
+                <label>⛓️ GitHub API Sync Configurations:</label>
+                <input type="password" id="ghTokenInput" placeholder="Enter GitHub Token (ghp_...)">
+                <input type="text" id="ghRepoInput" placeholder="Username/Repository" value="dkanha283-hub/bilingual-quiz">
+                <button id="connectGhBtn" class="tcs-btn tcs-btn-gray" style="margin-top:5px; padding:8px; background: #34495e; color: white;">Connect & Fetch Shared Banks</button>
+                <div id="apiStatusLog" style="margin-top: 8px; font-size: 0.8rem; color: #718096; font-family: monospace; background: #edf2f7; padding: 4px; border-radius: 4px; word-break: break-all;">Status: Waiting for connection...</div>
             </div>
 
             <div class="setup-group">
