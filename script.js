@@ -19,7 +19,7 @@ let ghToken = "";
 let ghRepo = "";
 const targetFolder = "quiz-banks"; 
 
-// --- FIXED: PARSED PRE-LOADED CONTEXT DATA PRESET ---
+// --- PARSED PRE-LOADED CONTEXT DATA PRESET ---
 const defaultPercentageSheetQuestions = [
     {"question_number":1,"text_en":"If 2% of x = 360, then x is equal to:","text_hi":"यदि x का 2%, 360 है, तो x का मान ज्ञात कीजिए।","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"36000","B":"18000","C":"18100","D":"36100"},"correct_answer":"B"},
     {"question_number":2,"text_en":"What is 20% of 40% of 30% of 75% of 3400?","text_hi":"3400 के 75% के 30% के 40% के 20% का मान क्या होगा?","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"61.5","B":"61.2","C":"61.1","D":"61.4"},"correct_answer":"B"},
@@ -61,9 +61,11 @@ const apiStatusLog = document.getElementById('apiStatusLog');
 const practiceFeedbackBox = document.getElementById('practiceFeedbackBox');
 const rightPaletteSidebar = document.getElementById('rightPaletteSidebar');
 
-// --- NEW MOBILE INTERACTIVE SWAP TRIGGERS ---
-document.getElementById('paletteToggleBtn').onclick = () => rightPaletteSidebar.classList.remove('mobile-hidden');
-document.getElementById('paletteCloseBtn').onclick = () => rightPaletteSidebar.classList.add('mobile-hidden');
+// --- INTERACTIVE SIDEBAR DRAWER CONTROLS ---
+if(document.getElementById('paletteToggleBtn')) {
+    document.getElementById('paletteToggleBtn').onclick = () => rightPaletteSidebar.classList.remove('mobile-hidden');
+    document.getElementById('paletteCloseBtn').onclick = () => rightPaletteSidebar.classList.add('mobile-hidden');
+}
 
 // --- RESUMABLE AUTO-SAVE ENGINE ---
 window.addEventListener('DOMContentLoaded', () => {
@@ -171,49 +173,95 @@ async function syncCloudRepositoryBankList() {
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     if (!ghToken || !ghRepo) return;
     
+    if(apiStatusLog) apiStatusLog.textContent = "Status: Reading GitHub Folder...";
+    
     try {
         const headers = { 
             'Accept': 'application/vnd.github.v3+json',
-            'Authorization': `Bearer ${ghToken}`
+            'Authorization': `token ${ghToken}`
         };
+
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${targetFolder}`, { headers });
-        if (!res.ok) return;
+        
+        // FIXED: Catch empty folder state successfully without terminating with error
+        if (res.status === 404) {
+            if(apiStatusLog) apiStatusLog.textContent = "Status: Connected! Cloud folder ready.";
+            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#2b6cb0; font-size:0.85rem; font-weight:bold;">☁️ Cloud Active! Upload a local JSON file below to push it to your GitHub folder.</div>`;
+            return;
+        }
+
+        if (!res.ok) {
+            if(apiStatusLog) apiStatusLog.textContent = `Status: Auth Blocked (${res.status})`;
+            return;
+        }
 
         const files = await res.json();
         const jsonFiles = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json')) : [];
 
+        if(apiStatusLog) apiStatusLog.textContent = `Status: Synced (${jsonFiles.length} cloud files identified)`;
+
         if(jsonFiles.length > 0) {
+            cloudBankFilesContainer.innerHTML = '';
+            
+            // Re-seed drop-down selection options systematically
             bankSourceDropdown.innerHTML = `<option value="default_percentage">Default Pre-loaded: Percentage Sheet</option><option value="local_upload">Upload custom JSON file...</option>`;
+            
             jsonFiles.forEach(file => {
+                const row = document.createElement('div');
+                row.className = 'cloud-file-row';
+                row.innerHTML = `
+                    <span class="cloud-file-name">${file.name}</span>
+                    <button class="cloud-file-delete" style="color:#e74c3c; font-weight:bold; border:none; background:none; cursor:pointer;">×</button>
+                `;
+                
+                row.querySelector('.cloud-file-name').onclick = () => loadRemoteJsonBank(file.path);
+                row.querySelector('.cloud-file-delete').onclick = () => deleteRemoteJsonBank(file.path, file.sha);
+                cloudBankFilesContainer.appendChild(row);
+
+                // Add item choice parameters straight inside main repository selectors
                 const opt = document.createElement('option');
                 opt.value = `cloud_${file.path}`;
                 opt.textContent = `Cloud: ${file.name}`;
                 bankSourceDropdown.appendChild(opt);
             });
+
             bankSourceDropdown.onchange = (e) => {
                 if(e.target.value.startsWith('cloud_')) {
                     localFilePickerWrapper.classList.add('hidden');
                     loadRemoteJsonBank(e.target.value.replace('cloud_', ''));
+                } else if(e.target.value === 'local_upload') {
+                    localFilePickerWrapper.classList.remove('hidden');
+                    fileQuestions = [];
+                } else {
+                    localFilePickerWrapper.classList.add('hidden');
+                    fileQuestions = defaultPercentageSheetQuestions;
+                    questionLimitInput.max = fileQuestions.length;
+                    questionLimitInput.value = fileQuestions.length;
                 }
             };
         }
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+        if(apiStatusLog) apiStatusLog.textContent = "Status: API Configuration Blocked.";
+    }
 }
 
 async function loadRemoteJsonBank(path) {
     try {
         const headers = { 
             'Accept': 'application/vnd.github.v3.raw',
-            'Authorization': `Bearer ${ghToken}`
+            'Authorization': `token ${ghToken}`
         };
+
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, { headers });
         const data = await res.json();
         fileQuestions = Array.isArray(data) ? data : (data.questions || []);
         if (fileQuestions.length > 0) {
+            startExamBtn.removeAttribute('disabled');
             questionLimitInput.max = fileQuestions.length;
             questionLimitInput.value = Math.min(20, fileQuestions.length);
+            alert(`Downloaded: ${path.split('/').pop()} successfully!`);
         }
-    } catch(err) { alert("Error downloading target cloud file configuration."); }
+    } catch(err) { alert("Error downloading cloud asset."); }
 }
 
 async function pushJsonBankToCloud(fileName, stringContent) {
@@ -221,18 +269,54 @@ async function pushJsonBankToCloud(fileName, stringContent) {
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     if (!ghToken || !ghRepo) return;
 
+    if(apiStatusLog) apiStatusLog.textContent = "Status: Syncing to cloud repository...";
+
     const base64Content = btoa(encodeURIComponent(stringContent).replace(/%([0-9A-F]{2})/g, function(match, p1) {
         return String.fromCharCode('0x' + p1);
     }));
+    
     const path = `${targetFolder}/${fileName}`;
+
     try {
         await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
             method: 'PUT',
-            headers: { 'Authorization': `Bearer ${ghToken}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: `Upload quiz asset: ${fileName}`, content: base64Content })
+            headers: { 
+                'Authorization': `token ${ghToken}`, 
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({
+                message: `Upload quiz asset: ${fileName}`,
+                content: base64Content
+            })
         });
+        if(apiStatusLog) apiStatusLog.textContent = "Status: Synced up perfectly!";
         setTimeout(syncCloudRepositoryBankList, 1500);
     } catch (err) { console.error(err); }
+}
+
+window.deleteRemoteJsonBank = async function(path, sha) {
+    if(!confirm("Erase this question bank completely from GitHub and the UI?")) return;
+    
+    ghToken = document.getElementById('ghTokenInput').value.trim();
+    ghRepo = document.getElementById('ghRepoInput').value.trim();
+
+    try {
+        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
+            method: 'DELETE',
+            headers: { 
+                'Authorization': `token ${ghToken}`, 
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({
+                message: `Erase item: ${path}`,
+                sha: sha
+            })
+        });
+        if(res.ok) {
+            alert("Pulled off GitHub repository cloud storage instances.");
+            setTimeout(syncCloudRepositoryBankList, 1000);
+        }
+    } catch (err) { alert("API interaction failed."); }
 }
 
 // --- STANDARD EXAM CONSOLE MANAGEMENT TRACKS ---
@@ -246,18 +330,19 @@ fileUploader.addEventListener('change', (e) => {
             const data = JSON.parse(rawText);
             fileQuestions = Array.isArray(data) ? data : (data.questions || []);
             if (fileQuestions.length > 0) {
+                startExamBtn.removeAttribute('disabled');
                 questionLimitInput.max = fileQuestions.length;
                 questionLimitInput.value = fileQuestions.length;
                 pushJsonBankToCloud(file.name, rawText);
             }
-        } catch(e) { alert("JSON file validation error."); }
+        } catch(e) { alert("JSON file validation format error."); }
     };
     reader.readAsText(file);
 });
 
 startExamBtn.onclick = () => {
     if(!fileQuestions || fileQuestions.length === 0) {
-        alert("Please load a question dataset profile first.");
+        alert("Please load a question dataset bank profile first.");
         return;
     }
     timerMode = document.querySelector('input[name="timerMode"]:checked').value;
@@ -267,6 +352,7 @@ startExamBtn.onclick = () => {
     if (document.querySelector('input[name="orderType"]:checked').value === 'shuffled') {
         cloned.sort(() => Math.random() - 0.5);
     }
+    
     let limit = parseInt(questionLimitInput.value) || cloned.length;
     examQuestions = cloned.slice(0, limit);
     
@@ -275,6 +361,7 @@ startExamBtn.onclick = () => {
     questionTimers = {}; 
     currentIndex = 0;
     questionStatuses[0] = 'notanswered';
+    
     consoleLangPref.value = langPrefSetup.value;
     
     const rawTimeInput = parseInt(timerInput.value) || 60;
@@ -310,7 +397,7 @@ function buildPaletteGridUI() {
         cell.textContent = idx + 1;
         cell.onclick = () => {
             jumpToQuestionIndex(idx);
-            rightPaletteSidebar.classList.add('mobile-hidden'); // Autohide sheet drawer on node selection touches
+            rightPaletteSidebar.classList.add('mobile-hidden'); 
         };
         paletteGrid.appendChild(cell);
     });
@@ -349,6 +436,7 @@ function renderQuestionIndex() {
     hasCheckedAnswer = false; 
     
     document.getElementById('questionNumTitle').textContent = `Q. No. ${currentIndex + 1}`;
+    document.getElementById('consoleExamTitle').textContent = examQuestions[currentIndex].exam || "RRB EXAM SIMULATOR";
     
     populateQuestionText();
     populateOptionsGrid();
@@ -596,4 +684,5 @@ window.pressCalcKey = function(key) {
 document.getElementById('restartBtn').onclick = () => {
     resultScreen.classList.add('hidden'); configScreen.classList.remove('hidden');
     fileUploader.value = ''; startExamBtn.setAttribute('disabled', false);
+    syncCloudRepositoryBankList();
 };
