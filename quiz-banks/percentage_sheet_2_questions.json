@@ -1,0 +1,964 @@
+[
+    {
+        "question_number": 1,
+        "text_en": "25% of the 66.67% of 75% of the 80% of a number is 4617. So what would be 40% of that number?",
+        "text_hi": "किसी संख्या के 80% के 75% के 66.67% का 25%, 4617 है। तो उस संख्या का 40% क्या होगा?",
+        "exam": "RPF Constable 17/01/2019 (Morning)",
+        "options": {
+            "a": "18468",
+            "b": "18668",
+            "c": "18568",
+            "d": "18768"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 2,
+        "text_en": "If 25% of a = b, then b% of 160 is equal to:",
+        "text_hi": "यदि a का 25% = b है, तो 160 का b% बराबर होगा:",
+        "exam": "ALP Tier II 21/01/2019 (Afternoon)",
+        "options": {
+            "a": "60% of a",
+            "b": "50% of a",
+            "c": "80% of a",
+            "d": "40% of a"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 3,
+        "text_en": "The difference between two numbers is 35% of the larger number. If the smaller number is 195, then the larger number is:",
+        "text_hi": "दो संख्याओं के बीच का अंतर बड़ी संख्या का 35% है। यदि छोटी संख्या 195 है, तो बड़ी संख्या है ?",
+        "exam": "RRB NTPC 27/02/2021 (Evening)",
+        "options": {
+            "a": "320",
+            "b": "330",
+            "c": "350",
+            "d": "300"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 4,
+        "text_en": "What percentage of 1 day is 18 minutes?",
+        "text_hi": "1 दिन का कितना प्रतिशत 18 मिनट है?",
+        "exam": "RRB ALP 31/08/2018 (Afternoon)",
+        "options": {
+            "a": "1.8%",
+            "b": "1.25%",
+            "c": "12.5%",
+            "d": "7.5%"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 5,
+        "text_en": "3/20 is what percentage of 12/25?",
+        "text_hi": "3/20 का कितना प्रतिशत 12/25 है?",
+        "exam": "RRB TECHNICIAN GRADE-3 2024",
+        "options": {
+            "a": "31.25%",
+            "b": "35.50%",
+            "c": "40.50%",
+            "d": "42.75%"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 6,
+        "text_en": "If the numerator of a fraction is decreased by 10% and the denominator is increased by 15%, the value of the new fraction becomes 2/5. What is the original fraction?",
+        "text_hi": "यदि किसी भिन्न के अंश में 10% की कमी की जाती है और हर में 15% की वृद्धि की जाती है, तो नए भिन्न का मान 2/5 हो जाता है। मूल भिन्न ज्ञात कीजिए।",
+        "exam": "RPF CONSTABLE 2025",
+        "options": {
+            "a": "21/41",
+            "b": "23/45",
+            "c": "17/27",
+            "d": "32/55"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 7,
+        "text_en": "Fresh fruits contain 58% water and dry fruits contains 30% water. How much dry fruits can be obtained from 200kg of fresh fruits?",
+        "text_hi": "ताज़े फलों में 58% पानी है और सूखे मेवों में 30% पानी होता है। 200 किलोग्राम ताज़े फलों से कितने सूखे फल प्राप्त किए जा सकते हैं?",
+        "exam": "SSC CGL 2017 PRE",
+        "options": {
+            "a": "120",
+            "b": "150",
+            "c": "160",
+            "d": "140"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 8,
+        "text_en": "Kalpana and Sudha got 621 and 522 marks, respectively, in the same examination. If Kalpana scored 69% marks, then what is the percentage of marks scored by Sudha?",
+        "text_hi": "कल्पना और सुधा को एक ही परीक्षा में क्रमशः 621 और 522 अंक मिले। यदि कल्पना ने 69% अंक प्राप्त किए, तो सुधा द्वारा प्राप्त अंकों का प्रतिशत कितना है?",
+        "exam": "RRB NTPC GRADUATE LEVEL 2025",
+        "options": {
+            "a": "58%",
+            "b": "59%",
+            "c": "60%",
+            "d": "55%"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 9,
+        "text_en": "48% of the total marks is required to pass an examination and 80% to get a First class with distinction. A student scored 817 marks and failed by 47 marks. How many marks should he secure to get First Class with distinction?",
+        "text_hi": "एक परीक्षा उत्तीर्ण करने के लिए कुल अंकों में से 48% और विशेष योग्यता के साथ प्रथम श्रेणी प्राप्त करने के लिए 80% आवश्यक है। एक विद्यार्थी ने 817 अंक प्राप्त किए और 47 अंकों से अनुत्तीर्ण हो गया। विशेष योग्यता के साथ प्रथम श्रेणी प्राप्त करने के लिए उसे कितने अंक प्राप्त करने चाहिए?",
+        "exam": null,
+        "options": {
+            "A": "1500",
+            "B": "1440",
+            "C": "1600",
+            "D": "1550"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 10,
+        "text_en": "If a student score 43% marks then he is failed by 72 marks, but when he scores 57% marks he is passed by 40 marks. Find passing %",
+        "text_hi": "यदि कोई छात्र 43% अंक प्राप्त करता है तो वह 72 अंकों से फेल हो जाता है, लेकिन जब वह 57% अंक प्राप्त करता है तो वह 40 अंकों से उत्तीर्ण होता है। प्राप्तांक % ज्ञात करें",
+        "exam": null,
+        "options": {
+            "a": "53%",
+            "b": "55%",
+            "c": "52%",
+            "d": "50%"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "question_number": 11,
+        "text_en": "A person who spends 33% of his monthly income is able to save 6,298 per month. His monthly expenses (in ₹) are:",
+        "text_hi": "एक व्यक्ति अपनी मासिक आय का 33% खर्च करता है, वह प्रति माह ₹6,298 बचाता है। उसका मासिक व्यय कितना है?",
+        "exam": "RRB NTPC GRADUATE LEVEL 2025",
+        "options": {
+            "a": "3,195",
+            "b": "3,083",
+            "c": "3,102",
+            "d": "3,024"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "question_number": 12,
+        "text_en": "X has planned his expenditure as follows: 30% of salary for house rent; 25% for food; 15% for medical expenditure and 16% for others. If he can save 42,000 every month, then his monthly salary (in ₹) is:",
+        "text_hi": "अपने व्यय की योजना बनाता है जिसमें वेतन का 30% घर के किराए के लिए; 25% भोजन के लिए; 15% चिकित्सा व्यय के लिए और 16% अन्य के लिए निर्धारित करता है। यदि वह हर महीने ₹42,000 की बचत कर सकता है, तो उसका मासिक वेतन (₹ में) ज्ञात कीजिए।",
+        "exam": "RRB NTPC GRADUATE LEVEL 2025",
+        "options": {
+            "a": "3,30,000",
+            "b": "3,00,000",
+            "c": "3,50,000",
+            "d": "4,20,000"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 13,
+        "text_en": "A man spends 28% of his monthly salary on house rent. If every month, he also spends 687 on conveyance and 7,483 on grocery and saves the remaining 218, his monthly salary is:",
+        "text_hi": "एक आदमी अपने मासिक वेतन का 28% घर के किराए पर खर्च करता है। यदि हर महीने वह ₹687 परिवहन पर और ₹7,483 किराने पर खर्च करता है और शेष ₹218 बचाता है, तो उसका मासिक वेतन कितना है?",
+        "exam": "RRB NTPC GRADUATE LEVEL 2025",
+        "options": {
+            "a": "11,738",
+            "b": "11,650",
+            "c": "11,594",
+            "d": "11,743"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 14,
+        "text_en": "The salaries of P and Q together amount to Rs 2000. P spends 95% of his salary and Q spends 85% of his salary. If now their savings are the same, then P's salary is?",
+        "text_hi": "P और Q का वेतन मिलाकर 2000 रुपये है। P अपने वेतन का 95% खर्च करता है और Q अपने वेतन का 85% खर्च करता है। यदि अब उनकी बचत समान है, तो P का वेतन कितना है?",
+        "exam": "RRB ALP 2024",
+        "options": {
+            "a": "Rs 1500",
+            "b": "Rs 500",
+            "c": "Rs 1250",
+            "d": "Rs 750"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 15,
+        "text_en": "Arvind spends 75% of his income. His income is increased by 20% and he increased his expenditure by 10%. His savings are increased by:",
+        "text_hi": "अरविन्द अपनी आय का 75% खर्च करता है। उसकी आय में 20% की वृद्धि हो जाती है और वह अपने व्यय में 10% की वृद्धि कर लेता है। उसकी बचत में हुई वृद्धि कितनी है?",
+        "exam": "RRB TECHNICIAN GRADE-3 2024",
+        "options": {
+            "A": "50%",
+            "B": "10%",
+            "C": "25%",
+            "D": "37.5%"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 16,
+        "text_en": "Bhavani spends 68% of her income. Her income increases by 15% and her expenditure increases by 10%. How much is the increase in the percentage of saving?",
+        "text_hi": "भवानी अपनी आय का 68% खर्च करती है। उसकी आय 15% बढ़ जाती है और उसका व्यय 10% बढ़ जाता है। बचत के प्रतिशत में कितनी हुई वृद्धि ?",
+        "exam": "SSC CPO 2024",
+        "options": {
+            "a": "20.57%",
+            "b": "25.62%",
+            "c": "28.42%",
+            "d": "24.80%"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 17,
+        "text_en": "Raghav spends 80% of his income. If his income increases by 12% and the savings decrease by 10%, then what will be the percentage increase in his expenditure?",
+        "text_hi": "राघव अपनी आय का 80% खर्च करता है। यदि उसकी आय में 12% की वृद्धि होती है और बचत मे 10% की कमी होती है, तो उसके खर्च में वृद्धि प्रतिशत क्या होगी?",
+        "exam": null,
+        "options": {
+            "a": "17.5",
+            "b": "22",
+            "c": "16",
+            "d": "20.5"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 18,
+        "text_en": "The total salary of Gaurav and Azam in a company is Rs.47520. If the salary of Gaurav increases by 23% and Azam increases by 30% then their total salary would increase to Rs.59928. Find the original salary of Gaurav?",
+        "text_hi": "एक कंपनी में गौरव और आज़म का कुल वेतन रू47520 है। अगर गौरव का वेतन 23% और आज़म का 30% बढ़ता है तो उनका कुल वेतन बढ़कर 59928 रुपये हो जाएगा। गौरव का आरंभिक वेतन ज्ञात कीजिये ?",
+        "exam": null,
+        "options": {
+            "a": "Rs.25200",
+            "b": "Rs.26400",
+            "c": "Rs.26290",
+            "d": "Rs.24600"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 19,
+        "text_en": "The population of a district is 373000, out of which 227000 are males. 69% of the population is literate. If 69% males are literate, then what percentage of females are literate?",
+        "text_hi": "एक जिले की जनसंख्या 373000 है, जिसमें से 227000 पुरुष हैं। 69% जनसंख्या साक्षर है। यदि 69% पुरुष साक्षर हैं, तो कितने प्रतिशत महिलाएँ साक्षर हैं?",
+        "exam": "RRB NTPC 12TH LEVEL 2025",
+        "options": {
+            "a": "69%",
+            "b": "67%",
+            "c": "70%",
+            "d": "68%"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 20,
+        "text_en": "35% of the students in a college are girls and the rest are boys. The total number of students in the college is 2800. 75% of the boys and 85% of the girls passed the final examination. The percentage of total students who passed the final examination is:",
+        "text_hi": "किसी कॉलेज में 35% छात्राएं हैं और शेष छात्र हैं। कॉलेज में विद्यार्थियों की कुल संख्या 2800 है। 75% छात्र और 85% छात्राएं, अंतिम परीक्षा में उत्तीर्ण होते हैं। अंतिम परीक्षा में उत्तीर्ण हुए कुल विद्यार्थियों का प्रतिशत ज्ञात करें.",
+        "exam": null,
+        "options": {
+            "a": "80%",
+            "b": "82%",
+            "c": "78%",
+            "d": "78.5%"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 21,
+        "text_en": "The ratio of the number of boys and girls in a school is 7: 5. If 65% of the boys and 81% of the girls are scholarship holders, then the percentage of students, who do not get scholarship, is",
+        "text_hi": "एक स्कूल में लड़के और लड़कियों की संख्या का अनुपात 7: 5 है। यदि 65% लड़के और 81% लड़कियाँ छात्रवृत्ति धारक हैं, तो उन छात्रों का प्रतिशत, जिन्हें छात्रवृत्ति नहीं मिलती है,",
+        "exam": null,
+        "options": {
+            "a": "28_1/3%",
+            "b": "25%",
+            "c": "30_1/4%",
+            "d": "27_1/12%"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 22,
+        "text_en": "A and B are numbers such that A is 40% larger than B. If A is decreased by 20% and B is increased by 38% then what is the percentage increase in the total value of A and B ?",
+        "text_hi": "A और B ऐसी संख्याएँ हैं कि A, B से 40% अधिक है। यदि A को 20% घटाया जाता है और B को 38% बढ़ाया जाता है, तो A और B के कुल मूल्य में कितने प्रतिशत की वृद्धि होती है ?",
+        "exam": "NTPC CBT II Level 2 (13/06/2022) Shift 1",
+        "options": {
+            "a": "5%",
+            "b": "4_1/6%",
+            "c": "8_1/3%",
+            "d": "10%"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 23,
+        "text_en": "The population of a district is 362000, out of which 181000 are males. 47% of the population is literate. If 35% males are literate, then what percentage of females are literate?",
+        "text_hi": "एक जिले की जनसंख्या 362000 है, जिसमें से 181000 पुरुष हैं। 47% जनसंख्या साक्षर है। यदि 35% पुरुष साक्षर हैं, तो कितने प्रतिशत महिलाएँ साक्षर हैं?",
+        "exam": "RRB NTPC 12TH LEVEL 2025",
+        "options": {
+            "a": "58%",
+            "b": "61%",
+            "c": "59%",
+            "d": "62%"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "question_number": 24,
+        "text_en": "The population of a district is 374000, out of which 170000 are males. 78% of the population is literate. If 66% males are literate, then what percentage of females are literate?",
+        "text_hi": "एक जिले की जनसंख्या 374000 है, जिसमें से 170000 पुरुष हैं। 78% जनसंख्या साक्षर है। यदि 66% पुरुष साक्षर हैं, तो कितने प्रतिशत महिलाएँ साक्षर हैं?",
+        "exam": "RRB NTPC 12TH LEVEL 2025",
+        "options": {
+            "a": "81%",
+            "b": "85%",
+            "c": "83%",
+            "d": "88%"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 25,
+        "text_en": "A certain number of students from school X appeared in an examination and 30% students failed. 150% more students than those from school X, appeared in the same examination from school Y. If 80% of the total number of students who appeared from X and Y passed, then what is the percentage of students who failed from Y?",
+        "text_hi": "किसी परीक्षा में विद्यालय X के कुछ छात्र शामिल हुए और 30% छात्र अनुत्तीर्ण हुए। उसी परीक्षा में विद्यालय x के छात्रों की तुलना में 150% अधिक छात्र, विद्यालय Y से शामिल हुए। यदि X और Y से शामिल हुए छात्रों की कुल संख्या के 80% उत्तीर्ण हुए हैं, तो Y से अनुत्तीर्ण हुए छात्रों का प्रतिशत ज्ञात कीजिए।",
+        "exam": null,
+        "options": {
+            "a": "18",
+            "b": "20",
+            "c": "16",
+            "d": "24"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "question_number": 26,
+        "text_en": "55% of men and 35% of women are married in a village. It is supposed that no person married more than one. How much percentage of population is married?",
+        "text_hi": "एक गाँव में 55% पुरुष और 35% महिलाएँ विवाहित हैं। ऐसा माना जाता है कि किसी भी व्यक्ति ने एक से अधिक विवाह नहीं किया है। तो जनसंख्या का कितना प्रतिशत विवाहित है?",
+        "exam": null,
+        "options": {
+            "a": "42.78%",
+            "b": "44.55%",
+            "c": "39.33%",
+            "d": "40.66%"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 27,
+        "text_en": "Sudha's expenditure is 125% more than her savings. If her expenditure decreases by 6%, and savings increase by 26.5%, then by what percentage does her income increase?",
+        "text_hi": "सुधा का व्यय, उसकी बचत से 125% अधिक है। यदि उसके व्यय में 6% की कमी होती है, और बचत में 26.5% की वृद्धि होती है, तो उसकी आय में कितने प्रतिशत की वृद्धि होती है.",
+        "exam": "RRB Group-D 2022",
+        "options": {
+            "A": "18.5%",
+            "B": "4%",
+            "C": "8%",
+            "D": "20.5%"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 28,
+        "text_en": "The monthly income of Ramesh was Rs.16,500 and his monthly expenditure was Rs.10,500. Next year his income increased by 25% and his expenditure increased by 19%. Find the percentage increase in his saving.",
+        "text_hi": "रमेश की मासिक आय Rs. 16,500 थी और उसका मासिक खर्च Rs. 10,500 था। अगले वर्ष उसकी आय में 25% की वृद्धि हुई और उसके व्यय में 19% की वृद्धि हुई। उसकी बचत में प्रतिशत वृद्धि ज्ञात कीजिए.",
+        "exam": "Delhi Police S.I. 09/11/2022 (Afternoon)",
+        "options": {
+            "A": "33.5%",
+            "B": "34.5%",
+            "C": "32.5%",
+            "D": "35.5%"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 29,
+        "text_en": "The income of Raman is 44,000. He saves 18.5% of his income. If his income increases by 17% and expenditure increases by 40%, then his savings will:",
+        "text_hi": "रमन की आय ₹44,000 है। वह अपनी आय के 18.5% की बचत करता है। यदि उसकी आय में 17% की वृद्धि होती है और खर्च में 40% की वृद्धि होती है, तो उसकी बचत में,",
+        "exam": "RRB NTPC 12TH LEVEL 2025",
+        "options": {
+            "A": "decrease by 6,864",
+            "B": "decrease by 36,860",
+            "c": "increase by 36,859",
+            "d": "increase by 36,862"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 30,
+        "text_en": "The price of a bottle is first increased by 15% and later the price was decreased by 24% due to a reduction in sales. Find the net percentage change in the final price of the bottle.",
+        "text_hi": "एक बोतल के मूल्य में पहले 15% की वृद्धि की जाती है और बाद में बिक्री में कमी के कारण इसके मूल्य में 24% की कमी की जाती है। बोतल के अंतिम मूल्य में निवल प्रतिशत परिवर्तन ज्ञात कीजिए.",
+        "exam": "SSC MTS 2023",
+        "options": {
+            "a": "Decrease of 13.9%",
+            "b": "Decrease of 12.6%",
+            "c": "Increase of 13.9%",
+            "d": "Increase of 12.6%"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 31,
+        "text_en": "Vijay's salary was first reduced by 16% and subsequently raised by 11%. What percentage was his final salary lower compared to his initial salary?",
+        "text_hi": "विजय का वेतन पहले 16% घटाया गया और बाद में 11% बढ़ा दिया गया। उसका अंतिम वेतन उसके आरंभिक वेतन की तुलना में कितने प्रतिशत कम था?",
+        "exam": "RRB NTPC GRADUATE LEVEL 2025",
+        "options": {
+            "a": "6.76%",
+            "b": "16%",
+            "c": "1.76%",
+            "d": "11%"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 32,
+        "text_en": "The salary of Neeta is first increased by 13% and then it is decreased by 13%. What is the change in her salary?",
+        "text_hi": "नीता के वेतन में पहले 13% की वृद्धि की जाती है और पुनः 13% कम कर दी जाती है। उसके वेतन में कितना परिवर्तन हुआ है?",
+        "exam": "SSC GD 2023",
+        "options": {
+            "a": "Increase of 1.69%",
+            "b": "Increase of 16.9%",
+            "c": "Decrease of 16.9%",
+            "d": "Decrease of 1.69%"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 33,
+        "text_en": "The price of a shirt is first increased by 15% and then decreased by 12%, and again increased by 8%. Find the net increase or decrease percentage (correct to one decimal place) in the price of the shirt.",
+        "text_hi": "एक शर्ट की कीमत में पहले 15% की वृद्धि हुई और फिर 12% की कमी हुई, और एक बार फिर 8% की वृद्धि हुई। शर्ट की कीमत में निवल वृद्धि या कमी प्रतिशत (दशमलव के एक स्थान तक सही) ज्ञात कीजिए.",
+        "exam": null,
+        "options": {
+            "a": "Increase of 10.6%",
+            "b": "Increase of 9.3%",
+            "c": "Decrease of 10.6%",
+            "d": "Decrease of 9.3%"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 34,
+        "text_en": "The price of fuel decreases by 15%, 25% and 35% in three successive months, but increases by 40% in the fourth month. What is the percentage increase/decrease in the price of fuel in the fourth month as compared to its original price?",
+        "text_hi": "ईंधन की कीमत क्रमागत तीन महीनों में 15%, 25% और 35% कम की गई है, लेकिन चौथे महीने में 40% वृद्धि की गई है। चौथे महीने में ईंधन की कीमत में उसकी मूल कीमत की तुलना में कितने प्रतिशत की वृद्धि/कमी हुई है?",
+        "exam": "RPF CONSTABLE 2025",
+        "options": {
+            "a": "Decreases by 41.98%",
+            "b": "Decreases by 40.3%",
+            "c": "Increases by 39.36%",
+            "d": "Increases by 45.33%"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 35,
+        "text_en": "The population of a village was 1,10,000. It increased by 5% in the first year and increased by 30% in the second year. Its population after two years is",
+        "text_hi": "एक गाँव की जनसंख्या 1,10,000 थी। पहले वर्ष में इसमें 5% की वृद्धि हुई तथा दूसरे वर्ष में 30% की वृद्धि हुई। दो वर्ष बाद इसकी जनसंख्या,",
+        "exam": "RRB NTPC GRADUATE LEVEL 2025",
+        "options": {
+            "a": "1,50,150",
+            "b": "1,15,500",
+            "c": "1,48,500",
+            "d": "1,43,000"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 36,
+        "text_en": "The current population of a town is 10,630. It increases by 25% and 50% in two successive years but decreases by 68% in the third year. What is the population of the town at the end of the third year?",
+        "text_hi": "किसी कस्बे की वर्तमान जनसंख्या 10,630 है। इसमें दो क्रमिक वर्षों में 25% और 50% की वृद्धि होती है, लेकिन तीसरे वर्ष में 68% की कमी हो जाती है। तीसरे वर्ष के अंत में कस्बे की जनसंख्या कितनी है?",
+        "exam": "RRB NTPC 12TH LEVEL 2025",
+        "options": {
+            "a": "6378",
+            "b": "6376",
+            "c": "6380",
+            "d": "6374"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 37,
+        "text_en": "The current population of a town is 12,500. It increases by 52% and 30% in two successive years but decreases by 15% in the third year. What is the population of the town at the end of the third year?",
+        "text_hi": "किसी कस्बे की वर्तमान जनसंख्या 12,500 है। यह दो क्रमिक वर्षों में 52% और 30% बढ़ जाती है, लेकिन तीसरे वर्ष में 15% घट जाती है। तीसरे वर्ष के अंत में कस्बे की जनसंख्या कितनी है?",
+        "exam": "RRB NTPC 12TH LEVEL 2025",
+        "options": {
+            "a": "20,990",
+            "b": "20,998",
+            "c": "20,995",
+            "d": "20,991"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "question_number": 38,
+        "text_en": "In a laboratory, the count of bacteria in a certain experiment was increasing at the rate of 4.4% per hour. Find the count of bacteria at the end of 2 hours if the count was initially 8,05,00,000.",
+        "text_hi": "एक प्रयोगशाला में, किसी प्रयोग में बैक्टीरिया की संख्या 4.4% प्रति घंटे की दर से बढ़ रही थी। यदि प्रारंभ में संख्या 8,05,00,000 थी, तो 2 घंटे बाद बैक्टीरिया की संख्या कितनी होगी?",
+        "exam": "RPF CONSTABLE 2025",
+        "options": {
+            "a": "8,44,39,855",
+            "b": "8,77,39,884",
+            "c": "8,77,39,848",
+            "d": "8,78,39,878"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "question_number": 39,
+        "text_en": "The income of a person increases by 15% annually. If the initial income is 70,000, calculate the income after 2 years.",
+        "text_hi": "एक व्यक्ति की आय में प्रतिवर्ष 15% की वृद्धि होती है। यदि प्रारंभिक आय ₹70,000 है, तो 2 वर्ष बाद की आय की गणना कीजिए.",
+        "exam": "RRB NTPC GRADUATE LEVEL 2025",
+        "options": {
+            "a": "91,875",
+            "b": "91,575",
+            "c": "92,575",
+            "d": "92,175"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "question_number": 40,
+        "text_en": "The population of a town was 1,20,000 at the end of 2017. It increases at a rate of 7% per annum. What will the population be at the end of 2019?",
+        "text_hi": "2017 के अंत में किसी शहर की जनसंख्या 1,20,000 थी। यह प्रतिवर्ष 7% की दर से बढ़ रही है। 2019 के अंत में जनसंख्या कितनी होगी?",
+        "exam": "RPF CONSTABLE 2025",
+        "options": {
+            "a": "1,37,570",
+            "b": "1,37,388",
+            "c": "1,37,680",
+            "d": "1,37,285"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 41,
+        "text_en": "A town had 1,60,000 inhabitants in 2021. Its population declines at a rate of 5% per annum. What will be its population in 2024?",
+        "text_hi": "2021 में एक शहर में 1,60,000 निवासी थे। शहर की जनसंख्या 5% वार्षिक की दर से घट जाती है। 2024 में इसकी जनसंख्या कितनी होगी?",
+        "exam": "RPF CONSTABLE 2025",
+        "options": {
+            "a": "99,000",
+            "b": "1,16,640",
+            "c": "1,00,000",
+            "d": "1,37,180"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 42,
+        "text_en": "The population of a town in 1968 was 4,85,000. If its population increased in two successive decades by 20% in each decade, the population of the town in 1988 was:",
+        "text_hi": "1968 में एक कस्बे की जनसंख्या 4,85,000 थी। यदि दो लगातार दशकों में इसकी जनसंख्या में 20% प्रति दशक की दर से वृद्धि हुई, तो 1988 में कस्बे की जनसंख्या कितनी थी?",
+        "exam": "RRB NTPC GRADUATE LEVEL 2025",
+        "options": {
+            "a": "6,98,405",
+            "b": "6,98,395",
+            "c": "6,98,400",
+            "d": "6,98,397"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "question_number": 43,
+        "text_en": "Two years ago, the population of the city was 5,00,000. If the annual birth rate and the annual death rate are 7% and 4%, respectively, what is the present population of the city?",
+        "text_hi": "दो वर्श पहले, एक भाहर की जनसंख्या 5,00,000 थी। यदि वार्थिक जन्म दर और वार्थिक मृत्यु दर क्रमशः 7% और 4% है, तो भाहर की वर्तमान जनसंख्या कितनी है?",
+        "exam": null,
+        "options": {
+            "a": "536440",
+            "b": "580440",
+            "c": "530450",
+            "d": "540550"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "question_number": 44,
+        "text_en": "Due to water crisis, 12% of the initial population left the town, and 25% of the remaining population left the town for pursuing jobs. If presently 660 people inhabit the town, what is the ratio of initial population to present population?",
+        "text_hi": "जल संकट के कारण, प्रारंभिक जनसंख्या का 12% हिस्सा शहर छोड़कर चला गया, और शेष जनसंख्या के 25% लोगों ने नौकरी की तलाश में शहर छोड़ दिया। यदि वर्तमान में शहर में 660 लोग रहते हैं, तो प्रारंभिक जनसंख्या और वर्तमान जनसंख्या का अनुपात ज्ञात कीजिए।",
+        "exam": null,
+        "options": {
+            "a": "53:36",
+            "b": "57:40",
+            "c": "55:32",
+            "d": "50:33"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 45,
+        "text_en": "Salil got an increase of 4% in his sales amount in the first year and 24% in the second year; also with this, his current sales are 1,61,200, what was his sales (in ₹) two years ago?",
+        "text_hi": "सलिल को उसकी बिक्री राशि में पहले वर्ष में 4% की वृद्धि और दूसरे वर्ष में 24% की वृद्धि प्राप्त हुई; इसके साथ ही, उसकी वर्तमान बिक्री ₹1,61,200 है, दो वर्ष पूर्व उसकी बिक्री (₹ में) कितनी थी?",
+        "exam": "RRB NTPC 12TH LEVEL 2025",
+        "options": {
+            "a": "1,25,000",
+            "b": "1,30,000",
+            "c": "1,55,000",
+            "d": "1,05,000"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 46,
+        "text_en": "Chetan gets a 2% increase in his sale amount in the first year and a 20% increase in the second year; with that his present sale is 1,76,800. What was his sale (in ₹) two years ago?",
+        "text_hi": "चेतन को पहले वर्ष में अपनी बिक्री राशि में 2% की वृद्धि और दूसरे वर्ष में 20% की वृद्धि प्राप्त होती है; इसके साथ उसकी वर्तमान बिक्री ₹1,76,800 है। दो वर्ष पहले उसकी बिक्री (₹ में) क्या थी?",
+        "exam": "RRB NTPC GRADUATE LEVEL 2025",
+        "options": {
+            "a": "1,24,444.44",
+            "b": "1,73,333.33",
+            "c": "1,47,333.33",
+            "d": "1,44,444.44"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 47,
+        "text_en": "When 10% of the inhabitants of a village died of cholera, a panic set in, during which 25% of the remaining inhabitants left the village. The population then reduced to 4050. Find the number of original inhabitants?",
+        "text_hi": "जब एक गाँव की 10% आबादी हैजा से मर गई, तो दहशत फैल गई, इस दौरान बची हुई 25% आबादी ने गाँव छोड़ दिया। तब जनसंख्या घटकर 4050 रह गई। मूल निवासियों की संख्या ज्ञात कीजिए?",
+        "exam": "RRB ALP 2024",
+        "options": {
+            "a": "7000",
+            "b": "5000",
+            "c": "8000",
+            "d": "6000"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 48,
+        "text_en": "The value of a machine decreases every year at the rate of 5%. If its present value is Rs411540, what was its value before 3 years ago?",
+        "text_hi": "किसी मशीन के मूल्य में प्रतिवर्ष 5% का हास होता है। यदि इसका वर्तमान मूल्य 411540 है। तो 3 वर्ष पहले इसका मूल्य क्या था",
+        "exam": null,
+        "options": {
+            "a": "450000",
+            "b": "460000",
+            "c": "475000",
+            "d": "480000"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 49,
+        "text_en": "A number is first decreased by 20% and then increased by 15%. The number so obtained is 64 less than the original number. The original number is:",
+        "text_hi": "एक संख्या में पहले 20% की कमी की जाती है और फिर 15% की वृद्धि की जाती है। इस प्रकार प्राप्त संख्या वास्तविक संख्या से 64 कम है। वास्तविक संख्या क्या है?",
+        "exam": "RRB NTPC 04/01/2021 (Evening)",
+        "options": {
+            "a": "800",
+            "b": "850",
+            "c": "600",
+            "d": "700"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 50,
+        "text_en": "The price of edible oil is increased by 30%. To maintain the budget, Reena reduces the consumption of this oil by 18%. Find the increased percentage in expenditure due to this edible oil.",
+        "text_hi": "खाद्य तेल की कीमत में 30% की वृद्धि हुई है। बजट मेंटेन करने के लिए, रीना इस तेल की खपत में 18% की कमी करती है। इस खाद्य तेल के कारण व्यय में वृद्धि प्रतिशत ज्ञात कीजिए.",
+        "exam": "RPF CONSTABLE 2025",
+        "options": {
+            "a": "6.9%",
+            "b": "6.6%",
+            "c": "6.3%",
+            "d": "6.1%"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 51,
+        "text_en": "In measuring the sides of a rectangle error of 10% and 8% in excess are made. Find the error percent in its area.",
+        "text_hi": "एक आयत की भुजाओं के मापन के दौरान त्रुटिवश उनका माप 10% और 8% अधिक प्राप्त होता है। इसके क्षेत्रफल में होने वाली त्रुटि का प्रतिशत ज्ञात कीजिए.",
+        "exam": "NTPC CBT II Level 2 (16/06/2022) Shift 2",
+        "options": {
+            "a": "1.88%",
+            "b": "188%",
+            "c": "18.8%",
+            "d": "0.188%"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "question_number": 52,
+        "text_en": "The base of a parallelogram is increased by 8% and height is increased by 4%. Find the net increase percentage in its area.",
+        "text_hi": "एक समांतर चतुर्भुज के आधार में 8% की वृद्धि की जाती है और ऊंचाई में 4% की वृद्धि की जाती है। इसके क्षेत्रफल में शुद्ध वृद्धि प्रतिशत ज्ञात कीजिए.",
+        "exam": "RPF CONSTABLE 2025",
+        "options": {
+            "a": "12.22%",
+            "b": "12.48%",
+            "c": "12.05%",
+            "d": "12.32%"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 53,
+        "text_en": "Sultan bought a new plot which need to be fenced immediately, due to this the length as well as the breadth of the rectangular working place is reduced by 9%. Find the % decrease in the area.",
+        "text_hi": "सुल्तान ने एक नया प्लॉट खरीदा है जिसकी तुरंत बाड़ लगाने की ज़रूरत है। इस वजह से आयताकार कार्यस्थल की लंबाई और चौड़ाई दोनों में 9% की कमी हो गई है। क्षेत्रफल में हुई % कमी ज्ञात कीजिए.",
+        "exam": null,
+        "options": {
+            "A": "16.66%",
+            "B": "17.19%",
+            "C": "18.00%",
+            "D": "13.56%"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 54,
+        "text_en": "The length, breadth and height of a room in the shape of a cuboid are increased by 15%, 20% and 30% respectively. Find the percentage change in the volume of the cuboid.",
+        "text_hi": "एक घनाभ के आकार के कमरे की लंबाई, चौड़ाई और ऊँचाई में क्रमशः 15%, 20% और 30% की वृद्धि की जाती है। घनाभ के आयतन में प्रतिशत परिवर्तन ज्ञात कीजिए.",
+        "exam": "UP S.I. 24/11/2021 (Afternoon)",
+        "options": {
+            "A": "79.4% increase",
+            "B": "79.4% decrease",
+            "C": "83.4% increase",
+            "D": "83.4% decrease"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 55,
+        "text_en": "The radius of a sphere is increased by 12%. The surface area increases by:",
+        "text_hi": "एक गोले की त्रिज्या 12% की वृद्धि जाती है। पृष्ठीय क्षेत्रफल में कितनी वृद्धि होगी:",
+        "exam": "ICAR Technician 2023",
+        "options": {
+            "a": "26.44%",
+            "b": "24.44%",
+            "c": "25.44%",
+            "d": "27.44%"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "question_number": 56,
+        "text_en": "If the radius of a sphere is increased by 20%, then the new volume will become % of the original volume.",
+        "text_hi": "यदि किसी गोले की त्रिज्या में 20% की वृद्धि कर दी जाए, तो इसका नया आयतन मूल आयतन का % हो जाएगा.",
+        "exam": "RRB TECHNICIAN GRADE-3 2024",
+        "options": {
+            "A": "172.8%",
+            "B": "20%",
+            "C": "120%",
+            "D": "72.8%"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 57,
+        "text_en": "If the radius of the base of a right circular cylinder is decreased by 18% and its height is increased by 141%, then what is the percentage increase (closest integer) in its volume?",
+        "text_hi": "यदि एक लम्ब वृत्तीय बेलन के आधार की त्रिज्या 18% कम कर दी जाए तथा इसकी ऊंचाई 141% बढ़ा दी जाए, तो इसके आयतन में प्रतिशत वृद्धि (निकटतम पूर्णांक तक) ज्ञात कीजिए.",
+        "exam": "RRB NTPC 12TH LEVEL 2025",
+        "options": {
+            "A": "43%",
+            "B": "62%",
+            "C": "92%",
+            "D": "74%"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 58,
+        "text_en": "Sandeep spends 32% of his annual income on food, 20% of the remaining income on travelling, and 35% of the remaining income on clothes, and still saves Rs. 70,720 per year. What is the annual income (in Rs.) of Sandeep?",
+        "text_hi": "संदीप अपनी वार्षिक आय का 32% भोजन पर, शेष आय का 20% यात्रा पर और शेष आय का 35% कपड़ों पर खर्च करता है और अभी भी प्रति वर्ष ₹70,720 बचाता है। संदीप की वार्षिक आय ज्ञात करें.",
+        "exam": "SSC Selection Post (Phase-XII)",
+        "options": {
+            "A": "5,44,000",
+            "B": "3,75,000",
+            "C": "2,00,000",
+            "D": "4,50,000"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 59,
+        "text_en": "A person spends 12.5% of his income on food, 18.75% of remaining part on travelling and 20% of the remaining part on education. Finally his total expenditure is Rs. 3450. Find his total income.",
+        "text_hi": "एक व्यक्ति भोजन पर अपनी आय का 12.5%, यात्रा पर शेष भाग का 18.75% और शेष 20% हिस्सा शिक्षा पर खर्च करता है। उसका कुल खर्च रु 3450 है। उसकी कुल आय ज्ञात कीजिए.",
+        "exam": null,
+        "options": {
+            "a": "5000",
+            "b": "8000",
+            "c": "10000",
+            "d": "12000"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 60,
+        "text_en": "The price of an article is increased by r%. The new price was decreased by r% later. Now the latest price is Rs. 1, What was the original price of the article?",
+        "text_hi": "एक वस्तु के मूल्य में r% की वृद्धि की जाती है। बाद में इस नए मूल्य में r% की कमी कर दी जाती है। अब नवीनतम मूल्य Rs.1 है। उस वास्तु का प्रारंभिक मूल्य कितना था?",
+        "exam": null,
+        "options": {
+            "a": "10000/(10000-r^2)",
+            "b": "10000/(10000+r^2)",
+            "c": "(10000-r^2)/10000",
+            "d": "1-r^2"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 61,
+        "text_en": "What will be the difference in population 3 years ago and 2 years ago of a town whose current population of 2,60,000 is increasing at a rate of 25% every year?",
+        "text_hi": "एक कस्बे की वर्तमान जनसंख्या 2,60,000 है, जो प्रति वर्ष 25% की दर से बढ़ रही है। 3 वर्ष पूर्व की जनसंख्या तथा 2 वर्ष पूर्व की जनसंख्या का अंतर ज्ञात कीजिए.",
+        "exam": "RRB NTPC GRADUATE LEVEL 2025",
+        "options": {
+            "a": "33,280",
+            "b": "32,530",
+            "c": "33,630",
+            "d": "32,730"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 62,
+        "text_en": "Lata buys a second-hand scooty for ₹30,000. The value of the scooty depreciates at the rate of x% yearly. If the scooty was sold at a price of 20,667 after 2 years, then what is the value of x?",
+        "text_hi": "लता ने ₹30,000 में एक सेकंड हैंड स्कूटी खरीदी। स्कूटी का मूल्य, x% वार्षिक दर से कम होता है। यदि 2 वर्ष बाद स्कूटी ₹20,667 के मूल्य पर बेची जाती है, तो x का मान ज्ञात कीजिए.",
+        "exam": "RPF CONSTABLE 2025",
+        "options": {
+            "a": "19",
+            "b": "16",
+            "c": "17",
+            "d": "18"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "question_number": 63,
+        "text_en": "In an election, there were two candidates. One of the candidates secured 48% of the votes and was defeated by the other candidate by 756 votes. Find the total number of votes polled.",
+        "text_hi": "एक चुनाव में दो उम्मीदवार थे। एक उम्मीदवार को 48% वोट मिले और वह दूसरे उम्मीदवार से 756 वोटों से हार गया। डाले गए कुल वोटों की संख्या ज्ञात कीजिए.",
+        "exam": "RRB NTPC GRADUATE LEVEL 2025",
+        "options": {
+            "a": "17,800",
+            "b": "19,500",
+            "c": "15,600",
+            "d": "18900"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 64,
+        "text_en": "In an election between two candidates, one got 55% of the total valid votes and 20% of the votes were invalid. If the total number of votes was 7500, then the winner won the election by a majority of votes?",
+        "text_hi": "दो उम्मीदवारों के बीच हुए चुनाव में एक को कुल वैध वोटों में से 55% वोट मिले और 20% वोट अवैध थे। यदि कुल मतों की संख्या 7500 थी, तो विजेता ने मतों के बहुमत से चुनाव जीता?",
+        "exam": "RRB ALP 2024",
+        "options": {
+            "a": "750",
+            "b": "800",
+            "c": "600",
+            "d": "700"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "question_number": 65,
+        "text_en": "A, B and C contested an election. All the votes polled were valid. A got 38% of the total votes. For every 45 votes polled, B got 18 votes. The winner got 5,760 more votes than the person who received the least number of votes. The total number of votes polled was:",
+        "text_hi": "A, B और C ने चुनाव लड़ा। डाले गए सभी वोट वैध थे। A को कुल मतों का 38% मत प्राप्त हुए। प्रत्येक 45 मतों के लिए, B को 18 मत प्राप्त हुए। विजेता को सबसे कम मत प्राप्त करने वाले व्यक्ति से 5,760 अधिक मत प्राप्त हुए। डाले गए मतों की कुल संख्या थीः",
+        "exam": "ICAR Assistant 2022",
+        "options": {
+            "a": "37,200",
+            "b": "38,400",
+            "c": "36,000",
+            "d": "32,000"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 66,
+        "text_en": "In a constituency, 90% of the total number of people on the electoral roll cast their votes during an election, 15% of the votes cast were declared invalid. Jeeta secured 60% of the valid votes. If jeeta secured 91,800 valid votes, what was the total number of people on the electoral roll?",
+        "text_hi": "एक निर्वाचन क्षेत्र की मतदाता सूची में शामिल कुल लोगों में से 90% लोगों ने चुनाव के दौरान मत डाले, डाले गए मतों में से 15% मत अवैध घोषित कर दिए गए। जीता ने वैध मतों के 60% मत प्राप्त किये। यदि जीता को 91,800 वैध वोट मिले, तो मतदाता सूची में कुल कितने लोग शामिल थे?",
+        "exam": "SSC CGL 2023 PRE",
+        "options": {
+            "a": "2,16,000",
+            "b": "2,25,000",
+            "c": "1,80,000",
+            "d": "2,00,000"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 67,
+        "text_en": "In an election between two candidates, 82% of the registered voters cast their vote and 4% of the votes polled were found invalid. The winning candidate got 60% of the valid votes and won the election by a margin of 1968 votes. How many voters were registered?",
+        "text_hi": "दो उम्मीदवारों के बीच हुए एक चुनाव में, 82% पंजीकृत मतदाताओं ने मतदान किया और डाले गए मतों में से 4% अवैध पाए गए। विजयी उम्मीदवार को वैध मतों के 60% मत प्राप्त हुए और उसने 1968 मतों के अंतर से चुनाव जीत लिया। पंजीकृत मतदाताओं की संख्या कितनी थी?",
+        "exam": "RRB NTPC 12TH LEVEL 2025",
+        "options": {
+            "a": "12497",
+            "b": "12500",
+            "c": "12502",
+            "d": "12501"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 68,
+        "text_en": "In an election, 12% of the voters in the voter list did not cast their votes, whereas 84 voters cast their ballot papers blank. There were only two candidates: Ramagya and Shravan. The winner, Ramagya, was supported by 54% of all the voters in the list. He got 1456 more votes than his rival, Shravan. Find the total number of voters in the list.",
+        "text_hi": "एक चुनाव में मतदाता सूची में शामिल 12% मतदाताओं ने अपना वोट नहीं डाला, जबकि 84 मतदाताओं ने अपने मतपत्र खाली डाले। केवल दो उम्मीदवार रामाजा और श्रवण थे। विजेता रामाज्ञा को सूची के सभी मतदाताओं में से 54% का समर्थन प्राप्त हुआ। उसे अपने प्रतिद्वंदी श्रवण से 1456 वोट अधिक मिले। सूची में मतदाताओं की कुल संख्या ज्ञात कीजिए.",
+        "exam": "SSC CPO 2024",
+        "options": {
+            "A": "5690",
+            "B": "6670",
+            "C": "7860",
+            "D": "6860"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 69,
+        "text_en": "In an examination, 52% candidates failed in English and 42% failed in Mathematics. If 17% failed in both the subjects, then what percent passed in both the subjects?",
+        "text_hi": "एक परीक्षा में, 52% परीक्षार्थी अंग्रेजी में फेल हुए और 42% गणित में फेल हुए। यदि 17% दोनों विषयों में फेल हुए, तो दोनों विषयों में कितने प्रतिशत परीक्षार्थी पास हुए?",
+        "exam": null,
+        "options": {
+            "a": "77",
+            "b": "58",
+            "c": "48",
+            "d": "23"
+        },
+        "correct_answer": "d"
+    },
+    {
+        "question_number": 70,
+        "text_en": "In an examination, 73% of the candidates passed the quantitative aptitude test, 70% passed the general knowledge test, and 64% passed both subjects. If 6300 candidates failed in both subjects, what was the total number of candidates?",
+        "text_hi": "किसी परीक्षा में 73% उम्मीदवार मात्रात्मक अभिक्षमता परीक्षण में उतीर्ण हुए, 70% सामान्य ज्ञान में और 64% दोनों विषयों में उतीर्ण हुए। यदि 6300 उम्मीदवार दोनों विषयों में फेल हुए तो बताइए कुल कितने परीक्षार्थी थे?",
+        "exam": null,
+        "options": {
+            "a": "60000",
+            "b": "50000",
+            "c": "30000",
+            "d": "25000"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "question_number": 71,
+        "text_en": "In an examination, 35% students failed in one subject and 42% failed in the other subject. Among these 30% failed in both subjects. If the total number of students is 2500 then how many students failed only in one subject?",
+        "text_hi": "एक परीक्षा में, 35% छात्र एक विषय में अनुत्तीर्ण हुए और 42% दूसरे विषय में अनुत्तीर्ण हुए। इनमें से 30% दोनों विषयों में अनुत्तीर्ण हुए। यदि विद्यार्थियों की कुल संख्या 2500 है तो केवल एक विषय में कितने विद्यार्थी अनुत्तीर्ण हुए?",
+        "exam": "RRB NTPC 12/01/2021 (Morning)",
+        "options": {
+            "a": "750",
+            "b": "425",
+            "c": "1050",
+            "d": "1750"
+        },
+        "correct_answer": "b"
+    },
+    {
+        "question_number": 72,
+        "text_en": "In a survey conducted in a locality, It was found that 50% read newspaper A, 40% read newspaper B, and 20% read neither A nor B. If the number of persons who read both A and B is 500, then how many persons were surveyed?",
+        "text_hi": "एक इलाके में किए गए सर्वेक्षण में, यह पाया गया कि 50% लोग समाचार पत्र A पढ़ते हैं, 40% लोग समाचार पत्र B पढ़ते हैं, और 20% न तो समाचार पत्र A पढ़ते हैं और न ही समाचार पत्र B पढ़ते हैं। यदि A और B दोनों समाचार पत्र पढ़ने वाले व्यक्तियों की संख्या 500 है, तो कितने लोगों का सर्वेक्षण किया गया था?",
+        "exam": "RRB JE 24/05/2019 (Evening)",
+        "options": {
+            "a": "7000",
+            "b": "3000",
+            "c": "5000",
+            "d": "4500"
+        },
+        "correct_answer": "c"
+    },
+    {
+        "question_number": 73,
+        "text_en": "In a given population, 20% of the population is affected with asthma out of which 90% of asthma patients used to work in flour mills. If 30% of the total population was working in flour mills, then what will be the percentage of the people working in flour mills who are suffering from asthma?",
+        "text_hi": "किसी दी गई आबादी में, 20% आबादी अस्थमा से प्रभावित है, जिसमें से 90% अस्थमा के रोगी आटा मिलों में काम करते थे। यदि कुल जनसंख्या का 30% आटा मिलों में काम कर रहा था, तो आटा मिलों में काम करने वाले लोगों का प्रतिशत क्या होगा जो अस्थमा से पीड़ित हैं?",
+        "exam": "RRB NTPC 02/02/2021 (Evening)",
+        "options": {
+            "a": "60%",
+            "b": "30%",
+            "c": "40%",
+            "d": "50%"
+        },
+        "correct_answer": "a"
+    },
+    {
+        "question_number": 74,
+        "text_en": "The number of boys and girls who appeared in an exam were in the ratio of 9:7. The number of boys & girls passing exam were in the ratio 3:2. If 60% of girls passed in exam, find the percentage of boys passed in exam.",
+        "text_hi": "एक परीक्षा में बैठने वाले लड़कों और लड़कियों की संख्या 9: 7 के अनुपात में थी। परीक्षा पास करने वाले लड़कों और लड़कियों की संख्या 3: 2 के अनुपात में थी। 60% लड़कियां परीक्षा में उत्तीर्ण हुई, परीक्षा में उत्तीर्ण लड़कों का प्रतिशत ज्ञात करें?",
+        "exam": null,
+        "options": {
+            "a": "64%",
+            "b": "72%",
+            "c": "70%",
+            "d": "80%"
+        },
+        "correct_answer": "c"
+    }
+]
