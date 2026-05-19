@@ -19,7 +19,7 @@ let ghToken = "";
 let ghRepo = "";
 const targetFolder = "quiz-banks"; 
 
-// --- FIXED: COMPLETE PRE-LOADED PERCENTAGE SHEET DATA EMBEDDED PRESET ---
+// --- FIXED: PARSED PRE-LOADED CONTEXT DATA PRESET ---
 const defaultPercentageSheetQuestions = [
     {"question_number":1,"text_en":"If 2% of x = 360, then x is equal to:","text_hi":"यदि x का 2%, 360 है, तो x का मान ज्ञात कीजिए।","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"36000","B":"18000","C":"18100","D":"36100"},"correct_answer":"B"},
     {"question_number":2,"text_en":"What is 20% of 40% of 30% of 75% of 3400?","text_hi":"3400 के 75% के 30% के 40% के 20% का मान क्या होगा?","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"61.5","B":"61.2","C":"61.1","D":"61.4"},"correct_answer":"B"},
@@ -34,14 +34,15 @@ const defaultPercentageSheetQuestions = [
     {"question_number":11,"text_en":"Two numbers A and B are such that the sum of 8% of A and 5% of B is three-fifth of the sum of 12% of A and 10% of B. The ratio of A and B is:","text_hi":"A और B दो संख्याए इस प्रकार हैं कि A के 8% और B के 5% का योग, A के 12% और B के 10% के योग का 3/5 भाग है। A और B का अनुपात कितना है?","exam":null,"options":{"A":"6:11","B":"11:6","C":"11:6","D":"no_option_d"},"correct_answer":"B"},
     {"question_number":12,"text_en":"The population of a town is increased from 60,000 to 61,050. How much is the percentage increase?","text_hi":"किसी कस्बे की जनसंख्या 60,000 से बढ़कर 61,050 हो जाती है। वृद्धि प्रतिशत कितना है?","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"1.65%","B":"1.55%","C":"1.85%","D":"1.75%"},"correct_answer":"B"},
     {"question_number":13,"text_en":"Monthly expenditure of Ritvik decreases from 12,800 to 11,712. Find the percentage decrease in his expenditure.","text_hi":"ऋत्विक का मासिक खर्च ₹12,800 से घटकर ₹11,712 हो गया। उसके व्यय में प्रतिशत कमी ज्ञात कीजिये।","exam":"SSC CHSL 2024","options":{"A":"7.7%","B":"6.25%","C":"8.5%","D":"9.25%"},"correct_answer":"D"},
-    {"question_number":14,"text_en":"The present cost of a house is 1,23,016. After a year, its cost will increase to 1,40,203. The percentage increase (rounded off to the nearest integer) in the cost of the house is:","text_hi":"किसी मकान की वर्तमान लागत ₹1,23,016 है। एक वर्ष बाद, इसकी लागत बढ़कर ₹1,40,203 हो जाएगी। मकान की लागत प्रतिशत वृद्धि (निकटतम पूर्णांक तक पूर्णांकित) ज्ञात कीजिए।","exam":null,"options":{"A":"10%","B":"14%","C":"8%","D":"17%"},"correct_answer":"C"},
-    {"question_number":15,"text_en":"The present cost of a plot area is 1,12,079. After a year, its cost increased to 1,89,297. The percentage increase (rounded off to the nearest integer) in the cost of the plot area is:","text_hi":"किसी भूखंड क्षेत्र की वर्तमान कीमत ₹1,12,079 है। एक वर्ष बाद, इसकी कीमत बढ़कर ₹1,89,297 हो गई। भूखंड क्षेत्र की कीमत में प्रतिशत वृद्धि (निकटतम पूर्णांक तक पूर्णांकित) ज्ञात कीजिए।","exam":"RRB NTPC 12TH LEVEL 2025","options":{"A":"73%","B":"67%","C":"69%","D":"57%"},"correct_answer":"B"},
-    {"question_number":16,"text_en":"The monthly income of Amara is 80,200. If her income is decreased by 11%, then find her new monthly income.","text_hi":"अमारा की मासिक आय ₹80,200 है। यदि उसकी आय 11% कम हो जाती है, तो उसकी नई मासिक आय ज्ञात कीजिए।","exam":"RRB NTPC 12TH LEVEL 2025","options":{"A":"71500","B":"71378","C":"71820","D":"71250"},"correct_answer":"C"},
-    {"question_number":17,"text_en":"The monthly income of a person is 27,540. If their income is increased by 20%, then what will be their new monthly income?","text_hi":"किसी व्यक्ति की मासिक आय ₹27,540 है। यदि उसकी आय में 20% की वृद्धि होती है, तो उसकी नई मासिक आय कितनी होगी?","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"₹9,248","B":"₹9,048","C":"₹9,448","D":"₹9,648"},"correct_answer":"B"},
-    {"question_number":18,"text_en":"A number when increased by 50% gives 3720. The number is:","text_hi":"एक संख्या को 50% बढ़ाने पर 3720 प्राप्त होता है। संख्या है:","exam":"RRB RPF SI 2024","options":{"A":"1240","B":"2480","C":"4960","D":"7440"},"correct_answer":"B"},
-    {"question_number":19,"text_en":"A number when increased by 40% gives 3570. The number is:","text_hi":"एक संख्या में 40% की वृद्धि करने पर 3570 प्राप्त होता है। वह संख्या ______ है।","exam":null,"options":{"A":"2550","B":"7650","C":"1275","D":"5100"},"correct_answer":"B"},
-    {"question_number":20,"text_en":"A number, when decreased by 7%, gives 3720. The number is:","text_hi":"किसी संख्या में 7% की कमी करने पर 3720 प्राप्त होता है। वह संख्या ज्ञात कीजिए।","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"2000","B":"4000","C":"12000","D":"8000"},"correct_answer":"A"},
-    {"question_number":60,"text_en":"If the radius of the cylinder is decreased by 20%, then by how much percent the height must be increased, so that the volume of the cylinder remains same?","text_hi":"यदि बेलन की त्रिज्या में 20% की कमी की जाती है, तो उसकी ऊँचाई में कितने प्रतिशत की वृद्धि करनी चाहिए ताकि बेलन का आयतन समान रहे?","exam":"CGL 2017","options":{"A":"44","B":"36.25","C":"56.25","D":"62.5"},"correct_answer":"C"}
+    {"question_number":14,"text_en":"The present cost of a house is 1,23,016. After a year, its cost will increase to 1,40,203. The percentage increase (rounded off to the nearest integer) in the cost of the house is:","text_hi":"किसी मकान की वर्तमान लागत ₹1,23,016 है। एक वर्ष बाद, इसकी लागत बढ़कर ₹1,40,203 हो जाएगी। मकान की लागत प्रतिशत वृद्धि (निकटतम पूर्णांक तक पूर्णांकित) ज्ञात कीजिए।","exam":null,"options":{"A":"10%","B":"14%","C":"8%","D":"17%"},"correct_answer":"c"},
+    {"question_number":15,"text_en":"The present cost of a plot area is 1,12,079. After a year, its cost increased to 1,89,297. The percentage increase (rounded off to the nearest integer) in the cost of the plot area is:","text_hi":"किसी भूखंड क्षेत्र की वर्तमान कीमत ₹1,12,079 है। एक वर्ष बाद, इसकी कीमत बढ़कर ₹1,89,297 हो गई। भूखंड क्षेत्र की कीमत में प्रतिशत वृद्धि (निकटतम पूर्णांक तक पूर्णांकित) ज्ञात कीजिए।","exam":"RRB NTPC 12TH LEVEL 2025","options":{"A":"73%","B":"67%","C":"69%","D":"57%"},"correct_answer":"b"},
+    {"question_number":16,"text_en":"The monthly income of Amara is 80,200. If her income is decreased by 11%, then find her new monthly income.","text_hi":"अमारा की मासिक आय ₹80,200 है। यदि उसकी आय 11% कम हो जाती है, तो उसकी नई मासिक आय ज्ञात कीजिए।","exam":"RRB NTPC 12TH LEVEL 2025","options":{"A":"71500","B":"71378","C":"71820","D":"71250"},"correct_answer":"c"},
+    {"question_number":17,"text_en":"The monthly income of a person is 27,540. If their income is increased by 20%, then what will be their new monthly income?","text_hi":"किसी व्यक्ति की मासिक आय ₹7,540 है। यदि उसकी आय में 20% की वृद्धि होती है, तो उसकी नई मासिक आय कितनी होगी?","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"₹9,248","B":"₹9,048","C":"₹9,448","D":"₹9,648"},"correct_answer":"b"},
+    {"question_number":18,"text_en":"A number when increased by 50% gives 3720. The number is:","text_hi":"एक संख्या को 50% बढ़ाने पर 3720 प्राप्त होता है। संख्या है:","exam":"RRB RPF SI 2024","options":{"A":"1240","B":"2480","C":"4960","D":"7440"},"correct_answer":"b"},
+    {"question_number":19,"text_en":"A number when increased by 40% gives 3570. The number is:","text_hi":"एक संख्या में 40% की वृद्धि करने पर 3570 प्राप्त होता है। वह संख्या ______ है।","exam":null,"options":{"A":"2550","B":"7650","C":"1275","D":"5100"},"correct_answer":"b"},
+    {"question_number":20,"text_en":"A number, when decreased by 7%, gives 3720. The number is:","text_hi":"किसी संख्या में 7% की कमी करने पर 3720 प्राप्त होता है। वह संख्या ज्ञात कीजिए।","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"2000","B":"4000","C":"12000","D":"8000"},"correct_answer":"a"},
+    {"question_number":21,"text_en":"A number, when increased by 60%, gives 3570. The number is:","text_hi":"एक संख्या में 60% की वृद्धि करने पर 3570 प्राप्त होता है। वह संख्या ज्ञात कीजिए।","exam":null,"options":{"A":"6693.75","B":"4462.5","C":"1115.625","D":"2231.25"},"correct_answer":"b"},
+    {"question_number":60,"text_en":"If the radius of the cylinder is decreased by 20%, then by how much percent the height must be increased, so that the volume of the cylinder remains same?","text_hi":"यदि बेलन की त्रिज्या में 20% की कमी की जाती है, तो उसकी ऊँचाई में कितने प्रतिशत की वृद्धि करनी चाहिए ताकि बेलन का आयतन समान रहे?","exam":"CGL 2017","options":{"A":"44","B":"36.25","C":"56.25","D":"62.5"},"correct_answer":"c"}
 ];
 
 // --- DOM Nodes Layout Selectors Bindings ---
@@ -63,6 +64,7 @@ const optionsContainer = document.getElementById('optionsContainer');
 const paletteGrid = document.getElementById('paletteGrid');
 const consoleLangPref = document.getElementById('consoleLangPref');
 const cloudBankFilesContainer = document.getElementById('cloudBankFilesContainer');
+const apiStatusLog = document.getElementById('apiStatusLog');
 const practiceFeedbackBox = document.getElementById('practiceFeedbackBox');
 
 // --- RESUMABLE AUTO-SAVE ENGINE ---
@@ -80,11 +82,11 @@ window.addEventListener('DOMContentLoaded', () => {
 bankSourceDropdown.addEventListener('change', (e) => {
     if (e.target.value === 'local_upload') {
         localFilePickerWrapper.classList.remove('hidden');
-        startExamBtn.setAttribute('disabled', true);
+        fileQuestions = [];
+        questionLimitInput.value = 0;
     } else if (e.target.value === 'default_percentage') {
         localFilePickerWrapper.classList.add('hidden');
         fileQuestions = defaultPercentageSheetQuestions;
-        startExamBtn.removeAttribute('disabled');
         questionLimitInput.max = fileQuestions.length;
         questionLimitInput.value = fileQuestions.length;
     }
@@ -171,49 +173,120 @@ async function syncCloudRepositoryBankList() {
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     if (!ghToken || !ghRepo) return;
     
+    if(apiStatusLog) apiStatusLog.textContent = "Status: Connecting to GitHub Tree...";
+    
     try {
-        const headers = { 'Accept': 'application/vnd.github.v3+json' };
-        if (ghToken) headers['Authorization'] = `token ${ghToken}`;
+        const headers = { 
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization': `Bearer ${ghToken}`
+        };
 
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${targetFolder}`, { headers });
-        if (!res.ok) return;
+        
+        if (res.status === 404) {
+            if(apiStatusLog) apiStatusLog.textContent = "Status: Connected! Cloud folder empty.";
+            return;
+        }
+
+        if (!res.ok) {
+            if(apiStatusLog) apiStatusLog.textContent = `Status: Auth Blocked (${res.status})`;
+            return;
+        }
 
         const files = await res.json();
         const jsonFiles = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json')) : [];
 
+        if(apiStatusLog) apiStatusLog.textContent = `Status: Synced (${jsonFiles.length} cloud files available)`;
+
         if(jsonFiles.length > 0) {
-            bankSourceDropdown.innerHTML = `<option value="default_percentage">Default Pre-loaded: Percentage Sheet (61 Questions)</option><option value="local_upload">Upload custom JSON file from device...</option>`;
+            cloudBankFilesContainer.innerHTML = '';
             jsonFiles.forEach(file => {
-                const opt = document.createElement('option');
-                opt.value = `cloud_${file.path}`;
-                opt.textContent = `Cloud: ${file.name}`;
-                bankSourceDropdown.appendChild(opt);
+                const row = document.createElement('div');
+                row.className = 'cloud-file-row';
+                row.innerHTML = `
+                    <span class="cloud-file-name">${file.name}</span>
+                    <button class="cloud-file-delete">×</button>
+                `;
+                
+                row.querySelector('.cloud-file-name').onclick = () => loadRemoteJsonBank(file.path);
+                row.querySelector('.cloud-file-delete').onclick = () => deleteRemoteJsonBank(file.path, file.sha);
+                
+                cloudBankFilesContainer.appendChild(row);
             });
-            
-            bankSourceDropdown.onchange = (e) => {
-                if(e.target.value.startsWith('cloud_')) {
-                    localFilePickerWrapper.classList.add('hidden');
-                    loadRemoteJsonBank(e.target.value.replace('cloud_', ''));
-                }
-            };
         }
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+        if(apiStatusLog) apiStatusLog.textContent = "Status: Connection Handshake Terminated.";
+    }
 }
 
 async function loadRemoteJsonBank(path) {
     try {
-        const headers = { 'Accept': 'application/vnd.github.v3.raw' };
-        if (ghToken) headers['Authorization'] = `token ${ghToken}`;
+        const headers = { 
+            'Accept': 'application/vnd.github.v3.raw',
+            'Authorization': `Bearer ${ghToken}`
+        };
 
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, { headers });
         const data = await res.json();
         fileQuestions = Array.isArray(data) ? data : (data.questions || []);
         if (fileQuestions.length > 0) {
-            startExamBtn.removeAttribute('disabled');
             questionLimitInput.max = fileQuestions.length;
             questionLimitInput.value = Math.min(20, fileQuestions.length);
+            alert(`Loaded Cloud Asset: ${path.split('/').pop()}`);
         }
-    } catch(err) { alert("Error connecting to database channel."); }
+    } catch(err) { alert("Error downloading target cloud file configuration."); }
+}
+
+async function pushJsonBankToCloud(fileName, stringContent) {
+    ghToken = document.getElementById('ghTokenInput').value.trim();
+    ghRepo = document.getElementById('ghRepoInput').value.trim();
+    if (!ghToken || !ghRepo) return;
+
+    const base64Content = btoa(encodeURIComponent(stringContent).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+        return String.fromCharCode('0x' + p1);
+    }));
+    
+    const path = `${targetFolder}/${fileName}`;
+
+    try {
+        await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
+            method: 'PUT',
+            headers: { 
+                'Authorization': `Bearer ${ghToken}`, 
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({
+                message: `Upload quiz asset: ${fileName}`,
+                content: base64Content
+            })
+        });
+        setTimeout(syncCloudRepositoryBankList, 1500);
+    } catch (err) { console.error(err); }
+}
+
+window.deleteRemoteJsonBank = async function(path, sha) {
+    if(!confirm("Erase this asset from GitHub?")) return;
+    
+    ghToken = document.getElementById('ghTokenInput').value.trim();
+    ghRepo = document.getElementById('ghRepoInput').value.trim();
+
+    try {
+        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
+            method: 'DELETE',
+            headers: { 
+                'Authorization': `Bearer ${ghToken}`, 
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({
+                message: `Erase item: ${path}`,
+                sha: sha
+            })
+        });
+        if(res.ok) {
+            alert("Pulled off GitHub repository instances cleanly.");
+            setTimeout(syncCloudRepositoryBankList, 1000);
+        }
+    } catch (err) { alert("API interaction failed."); }
 }
 
 // --- STANDARD EXAM CONSOLE MANAGEMENT TRACKS ---
@@ -223,19 +296,27 @@ fileUploader.addEventListener('change', (e) => {
     const reader = new FileReader();
     reader.onload = function(event) {
         try {
-            const data = JSON.parse(event.target.textContent || event.target.result);
+            const rawText = event.target.textContent || event.target.result;
+            const data = JSON.parse(rawText);
             fileQuestions = Array.isArray(data) ? data : (data.questions || []);
             if (fileQuestions.length > 0) {
-                startExamBtn.removeAttribute('disabled');
                 questionLimitInput.max = fileQuestions.length;
-                questionLimitInput.value = Math.min(20, fileQuestions.length);
+                questionLimitInput.value = fileQuestions.length;
+                
+                // Backup sync task triggers asynchronously if credentials are connected
+                pushJsonBankToCloud(file.name, rawText);
             }
-        } catch(e) { alert("JSON structural mismatch error layout properties."); }
+        } catch(e) { alert("JSON file schema format mismatch error."); }
     };
     reader.readAsText(file);
 });
 
 startExamBtn.onclick = () => {
+    if(!fileQuestions || fileQuestions.length === 0) {
+        alert("Please load a question dataset bank profile first.");
+        return;
+    }
+
     operationMode = document.querySelector('input[name="assessmentMode"]:checked').value;
     
     let cloned = JSON.parse(JSON.stringify(fileQuestions));
@@ -267,7 +348,7 @@ startExamBtn.onclick = () => {
         document.getElementById('practiceCheckBtn').classList.remove('hidden');
     } else {
         document.getElementById('submitBtn').textContent = "Save & Next ➡️";
-        document.getElementById('finishExamBtn').classList.add('hidden');
+        document.getElementById('practiceCheckBtn').classList.add('hidden');
     }
     
     configScreen.classList.add('hidden');
