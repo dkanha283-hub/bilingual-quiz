@@ -35,6 +35,7 @@ const defaultPercentageSheetQuestions = [
     {"question_number":12,"text_en":"The population of a town is increased from 60,000 to 61,050. How much is the percentage increase?","text_hi":"किसी कस्बे की जनसंख्या 60,000 से बढ़कर 61,050 हो जाती है। वृद्धि प्रतिशत कितना है?","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"1.65%","B":"1.55%","C":"1.85%","D":"1.75%"},"correct_answer":"B"},
     {"question_number":13,"text_en":"Monthly expenditure of Ritvik decreases from 12,800 to 11,712. Find the percentage decrease in his expenditure.","text_hi":"ऋत्विक का मासिक खर्च ₹12,800 से घटकर ₹11,712 हो गया। उसके व्यय में प्रतिशत कमी ज्ञात कीजिये।","exam":"SSC CHSL 2024","options":{"A":"7.7%","B":"6.25%","C":"8.5%","D":"9.25%"},"correct_answer":"D"},
     {"question_number":20,"text_en":"A number, when decreased by 7%, gives 3720. The number is:","text_hi":"किसी संख्या में 7% की कमी करने पर 3720 प्राप्त होता है। वह संख्या ज्ञात कीजिए।","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"2000","B":"4000","C":"12000","D":"8000"},"correct_answer":"a"},
+    {"question_number":21,"text_en":"A number, when increased by 60%, gives 3570. The number is:","text_hi":"एक संख्या में 60% की वृद्धि करने पर 3570 प्राप्त होता है। वह संख्या ज्ञात कीजिए।","exam":null,"options":{"A":"6693.75", "B":"4462.5", "C":"1115.625", "D":"2231.25"},"correct_answer":"b"},
     {"question_number":60,"text_en":"If the radius of the cylinder is decreased by 20%, then by how much percent the height must be increased, so that the volume of the cylinder remains same?","text_hi":"यदि बेलन की त्रिज्या में 20% की कमी की जाती है, तो उसकी ऊँचाई में कितने प्रतिशत की वृद्धि करनी चाहिए ताकि बेलन का आयतन समान रहे?","exam":"CGL 2017","options":{"A":"44","B":"36.25","C":"56.25","D":"62.5"},"correct_answer":"c"}
 ];
 
@@ -61,13 +62,20 @@ const apiStatusLog = document.getElementById('apiStatusLog');
 const practiceFeedbackBox = document.getElementById('practiceFeedbackBox');
 const rightPaletteSidebar = document.getElementById('rightPaletteSidebar');
 
-// --- INTERACTIVE MOBILE OVERLAY HANDLERS ---
+// --- INTERACTIVE SIDEBAR DRAWER CONTROLS ---
 if(document.getElementById('paletteToggleBtn')) {
     document.getElementById('paletteToggleBtn').addEventListener('click', () => rightPaletteSidebar.classList.remove('mobile-hidden'));
     document.getElementById('paletteCloseBtn').addEventListener('click', () => rightPaletteSidebar.classList.add('mobile-hidden'));
 }
 
-// --- RESUMABLE AUTO-SAVE SYSTEM ---
+// --- FIXED: LISTEN FOR LIVE LANGUAGE SWITCHES DURING EXAM ---
+consoleLangPref.addEventListener('change', () => {
+    if (examQuestions.length > 0) {
+        populateQuestionText();
+    }
+});
+
+// --- RESUMABLE AUTO-SAVE ENGINE ---
 window.addEventListener('DOMContentLoaded', () => {
     fileQuestions = defaultPercentageSheetQuestions;
     questionLimitInput.max = fileQuestions.length;
@@ -159,7 +167,6 @@ function loadCachedGithubCredentials() {
     }
 }
 
-// FIXED: Explicitly handle click/touch bindings to guarantee execution across all viewports
 document.getElementById('connectGhBtn').addEventListener('click', (e) => {
     e.preventDefault();
     ghToken = document.getElementById('ghTokenInput').value.trim();
@@ -188,7 +195,6 @@ async function syncCloudRepositoryBankList() {
             'Authorization': `token ${ghToken}`
         };
 
-        // FIXED: Cache-busting parameter added to force pristine updates on list modifications
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${targetFolder}?cb=${Date.now()}`, { headers });
         
         if (res.status === 404) {
@@ -215,7 +221,6 @@ async function syncCloudRepositoryBankList() {
 
         cloudBankFilesContainer.innerHTML = '';
         
-        // Dynamic Dropdown rebuild blueprint
         bankSourceDropdown.innerHTML = `
             <option value="default_percentage">Default Pre-loaded: Percentage Sheet</option>
             <option value="local_upload">Upload custom JSON file...</option>
@@ -345,7 +350,7 @@ fileUploader.addEventListener('change', (e) => {
                 questionLimitInput.value = fileQuestions.length;
                 pushJsonBankToCloud(file.name, rawText);
             }
-        } catch(e) { alert("JSON verification layout error."); }
+        } catch(e) { alert("JSON file validation error."); }
     };
     reader.readAsText(file);
 });
@@ -362,7 +367,6 @@ startExamBtn.onclick = () => {
     if (document.querySelector('input[name="orderType"]:checked').value === 'shuffled') {
         cloned.sort(() => Math.random() - 0.5);
     }
-    
     let limit = parseInt(questionLimitInput.value) || cloned.length;
     examQuestions = cloned.slice(0, limit);
     
@@ -371,7 +375,6 @@ startExamBtn.onclick = () => {
     questionTimers = {}; 
     currentIndex = 0;
     questionStatuses[0] = 'notanswered';
-    
     consoleLangPref.value = langPrefSetup.value;
     
     const rawTimeInput = parseInt(timerInput.value) || 60;
