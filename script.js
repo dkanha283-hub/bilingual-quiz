@@ -61,13 +61,13 @@ const apiStatusLog = document.getElementById('apiStatusLog');
 const practiceFeedbackBox = document.getElementById('practiceFeedbackBox');
 const rightPaletteSidebar = document.getElementById('rightPaletteSidebar');
 
-// --- INTERACTIVE SIDEBAR DRAWER CONTROLS ---
+// --- INTERACTIVE MOBILE OVERLAY HANDLERS ---
 if(document.getElementById('paletteToggleBtn')) {
-    document.getElementById('paletteToggleBtn').onclick = () => rightPaletteSidebar.classList.remove('mobile-hidden');
-    document.getElementById('paletteCloseBtn').onclick = () => rightPaletteSidebar.classList.add('mobile-hidden');
+    document.getElementById('paletteToggleBtn').addEventListener('click', () => rightPaletteSidebar.classList.remove('mobile-hidden'));
+    document.getElementById('paletteCloseBtn').addEventListener('click', () => rightPaletteSidebar.classList.add('mobile-hidden'));
 }
 
-// --- RESUMABLE AUTO-SAVE ENGINE ---
+// --- RESUMABLE AUTO-SAVE SYSTEM ---
 window.addEventListener('DOMContentLoaded', () => {
     fileQuestions = defaultPercentageSheetQuestions;
     questionLimitInput.max = fileQuestions.length;
@@ -159,21 +159,28 @@ function loadCachedGithubCredentials() {
     }
 }
 
-document.getElementById('connectGhBtn').onclick = () => {
+// FIXED: Explicitly handle click/touch bindings to guarantee execution across all viewports
+document.getElementById('connectGhBtn').addEventListener('click', (e) => {
+    e.preventDefault();
     ghToken = document.getElementById('ghTokenInput').value.trim();
     ghRepo = document.getElementById('ghRepoInput').value.trim();
-    if(!ghToken || !ghRepo) return;
+    
+    if(!ghToken || !ghRepo) {
+        if(apiStatusLog) apiStatusLog.textContent = "Status: Missing fields!";
+        return;
+    }
+    
     localStorage.setItem('rrb_git_token', ghToken);
     localStorage.setItem('rrb_git_repo', ghRepo);
     syncCloudRepositoryBankList();
-};
+});
 
 async function syncCloudRepositoryBankList() {
     ghToken = document.getElementById('ghTokenInput').value.trim();
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     if (!ghToken || !ghRepo) return;
     
-    if(apiStatusLog) apiStatusLog.textContent = "Status: Reading GitHub Folder...";
+    if(apiStatusLog) apiStatusLog.textContent = "Status: Reaching GitHub servers...";
     
     try {
         const headers = { 
@@ -181,67 +188,73 @@ async function syncCloudRepositoryBankList() {
             'Authorization': `token ${ghToken}`
         };
 
-        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${targetFolder}`, { headers });
+        // FIXED: Cache-busting parameter added to force pristine updates on list modifications
+        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${targetFolder}?cb=${Date.now()}`, { headers });
         
-        // FIXED: Catch empty folder state successfully without terminating with error
         if (res.status === 404) {
-            if(apiStatusLog) apiStatusLog.textContent = "Status: Connected! Cloud folder ready.";
-            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#2b6cb0; font-size:0.85rem; font-weight:bold;">☁️ Cloud Active! Upload a local JSON file below to push it to your GitHub folder.</div>`;
+            if(apiStatusLog) apiStatusLog.textContent = "Status: Active! Folder ready.";
+            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#2b6cb0; font-size:0.85rem; font-weight:bold;">☁️ Connected! Upload your JSON files below to sync them to the cloud directory.</div>`;
             return;
         }
 
         if (!res.ok) {
-            if(apiStatusLog) apiStatusLog.textContent = `Status: Auth Blocked (${res.status})`;
+            if(apiStatusLog) apiStatusLog.textContent = `Status: Auth Blocked (Code ${res.status})`;
+            cloudBankFilesContainer.innerHTML = `<div style="color:red; text-align:center; padding:10px; font-size:0.85rem;">Authentication Failed! Double-check token privileges.</div>`;
             return;
         }
 
         const files = await res.json();
         const jsonFiles = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json')) : [];
 
-        if(apiStatusLog) apiStatusLog.textContent = `Status: Synced (${jsonFiles.length} cloud files identified)`;
+        if(apiStatusLog) apiStatusLog.textContent = `Status: Active (${jsonFiles.length} cloud files synced)`;
 
-        if(jsonFiles.length > 0) {
-            cloudBankFilesContainer.innerHTML = '';
-            
-            // Re-seed drop-down selection options systematically
-            bankSourceDropdown.innerHTML = `<option value="default_percentage">Default Pre-loaded: Percentage Sheet</option><option value="local_upload">Upload custom JSON file...</option>`;
-            
-            jsonFiles.forEach(file => {
-                const row = document.createElement('div');
-                row.className = 'cloud-file-row';
-                row.innerHTML = `
-                    <span class="cloud-file-name">${file.name}</span>
-                    <button class="cloud-file-delete" style="color:#e74c3c; font-weight:bold; border:none; background:none; cursor:pointer;">×</button>
-                `;
-                
-                row.querySelector('.cloud-file-name').onclick = () => loadRemoteJsonBank(file.path);
-                row.querySelector('.cloud-file-delete').onclick = () => deleteRemoteJsonBank(file.path, file.sha);
-                cloudBankFilesContainer.appendChild(row);
-
-                // Add item choice parameters straight inside main repository selectors
-                const opt = document.createElement('option');
-                opt.value = `cloud_${file.path}`;
-                opt.textContent = `Cloud: ${file.name}`;
-                bankSourceDropdown.appendChild(opt);
-            });
-
-            bankSourceDropdown.onchange = (e) => {
-                if(e.target.value.startsWith('cloud_')) {
-                    localFilePickerWrapper.classList.add('hidden');
-                    loadRemoteJsonBank(e.target.value.replace('cloud_', ''));
-                } else if(e.target.value === 'local_upload') {
-                    localFilePickerWrapper.classList.remove('hidden');
-                    fileQuestions = [];
-                } else {
-                    localFilePickerWrapper.classList.add('hidden');
-                    fileQuestions = defaultPercentageSheetQuestions;
-                    questionLimitInput.max = fileQuestions.length;
-                    questionLimitInput.value = fileQuestions.length;
-                }
-            };
+        if(jsonFiles.length === 0) {
+            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#64748b; font-size:0.85rem;">Folder initialized. No JSON assets present.</div>`;
+            return;
         }
+
+        cloudBankFilesContainer.innerHTML = '';
+        
+        // Dynamic Dropdown rebuild blueprint
+        bankSourceDropdown.innerHTML = `
+            <option value="default_percentage">Default Pre-loaded: Percentage Sheet</option>
+            <option value="local_upload">Upload custom JSON file...</option>
+        `;
+        
+        jsonFiles.forEach(file => {
+            const row = document.createElement('div');
+            row.className = 'cloud-file-row';
+            row.innerHTML = `
+                <span class="cloud-file-name">${file.name}</span>
+                <button class="cloud-file-delete">×</button>
+            `;
+            
+            row.querySelector('.cloud-file-name').addEventListener('click', () => loadRemoteJsonBank(file.path));
+            row.querySelector('.cloud-file-delete').addEventListener('click', () => deleteRemoteJsonBank(file.path, file.sha));
+            cloudBankFilesContainer.appendChild(row);
+
+            const opt = document.createElement('option');
+            opt.value = `cloud_${file.path}`;
+            opt.textContent = `Cloud Asset: ${file.name}`;
+            bankSourceDropdown.appendChild(opt);
+        });
+
+        bankSourceDropdown.onchange = (e) => {
+            if(e.target.value.startsWith('cloud_')) {
+                localFilePickerWrapper.classList.add('hidden');
+                loadRemoteJsonBank(e.target.value.replace('cloud_', ''));
+            } else if(e.target.value === 'local_upload') {
+                localFilePickerWrapper.classList.remove('hidden');
+                fileQuestions = [];
+            } else {
+                localFilePickerWrapper.classList.add('hidden');
+                fileQuestions = defaultPercentageSheetQuestions;
+                questionLimitInput.max = fileQuestions.length;
+                questionLimitInput.value = fileQuestions.length;
+            }
+        };
     } catch (err) { 
-        if(apiStatusLog) apiStatusLog.textContent = "Status: API Configuration Blocked.";
+        if(apiStatusLog) apiStatusLog.textContent = "Status: API Handshake Failed.";
     }
 }
 
@@ -251,17 +264,15 @@ async function loadRemoteJsonBank(path) {
             'Accept': 'application/vnd.github.v3.raw',
             'Authorization': `token ${ghToken}`
         };
-
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, { headers });
         const data = await res.json();
         fileQuestions = Array.isArray(data) ? data : (data.questions || []);
         if (fileQuestions.length > 0) {
-            startExamBtn.removeAttribute('disabled');
             questionLimitInput.max = fileQuestions.length;
-            questionLimitInput.value = Math.min(20, fileQuestions.length);
-            alert(`Downloaded: ${path.split('/').pop()} successfully!`);
+            questionLimitInput.value = fileQuestions.length;
+            alert(`Asset loaded into active context: ${path.split('/').pop()}`);
         }
-    } catch(err) { alert("Error downloading cloud asset."); }
+    } catch(err) { alert("Failed pulling cloud data asset."); }
 }
 
 async function pushJsonBankToCloud(fileName, stringContent) {
@@ -269,7 +280,7 @@ async function pushJsonBankToCloud(fileName, stringContent) {
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     if (!ghToken || !ghRepo) return;
 
-    if(apiStatusLog) apiStatusLog.textContent = "Status: Syncing to cloud repository...";
+    if(apiStatusLog) apiStatusLog.textContent = "Status: Syncing file payload...";
 
     const base64Content = btoa(encodeURIComponent(stringContent).replace(/%([0-9A-F]{2})/g, function(match, p1) {
         return String.fromCharCode('0x' + p1);
@@ -285,17 +296,17 @@ async function pushJsonBankToCloud(fileName, stringContent) {
                 'Content-Type': 'application/json' 
             },
             body: JSON.stringify({
-                message: `Upload quiz asset: ${fileName}`,
+                message: `Sync question file: ${fileName}`,
                 content: base64Content
             })
         });
-        if(apiStatusLog) apiStatusLog.textContent = "Status: Synced up perfectly!";
+        if(apiStatusLog) apiStatusLog.textContent = "Status: Synced perfectly!";
         setTimeout(syncCloudRepositoryBankList, 1500);
     } catch (err) { console.error(err); }
 }
 
 window.deleteRemoteJsonBank = async function(path, sha) {
-    if(!confirm("Erase this question bank completely from GitHub and the UI?")) return;
+    if(!confirm("Are you sure you want to delete this asset from your cloud repository folder?")) return;
     
     ghToken = document.getElementById('ghTokenInput').value.trim();
     ghRepo = document.getElementById('ghRepoInput').value.trim();
@@ -308,12 +319,12 @@ window.deleteRemoteJsonBank = async function(path, sha) {
                 'Content-Type': 'application/json' 
             },
             body: JSON.stringify({
-                message: `Erase item: ${path}`,
+                message: `Purge item: ${path}`,
                 sha: sha
             })
         });
         if(res.ok) {
-            alert("Pulled off GitHub repository cloud storage instances.");
+            alert("File erased from GitHub directory successfully.");
             setTimeout(syncCloudRepositoryBankList, 1000);
         }
     } catch (err) { alert("API interaction failed."); }
@@ -330,19 +341,18 @@ fileUploader.addEventListener('change', (e) => {
             const data = JSON.parse(rawText);
             fileQuestions = Array.isArray(data) ? data : (data.questions || []);
             if (fileQuestions.length > 0) {
-                startExamBtn.removeAttribute('disabled');
                 questionLimitInput.max = fileQuestions.length;
                 questionLimitInput.value = fileQuestions.length;
                 pushJsonBankToCloud(file.name, rawText);
             }
-        } catch(e) { alert("JSON file validation format error."); }
+        } catch(e) { alert("JSON verification layout error."); }
     };
     reader.readAsText(file);
 });
 
 startExamBtn.onclick = () => {
     if(!fileQuestions || fileQuestions.length === 0) {
-        alert("Please load a question dataset bank profile first.");
+        alert("Please select or upload a valid quiz data model first.");
         return;
     }
     timerMode = document.querySelector('input[name="timerMode"]:checked').value;
@@ -436,7 +446,6 @@ function renderQuestionIndex() {
     hasCheckedAnswer = false; 
     
     document.getElementById('questionNumTitle').textContent = `Q. No. ${currentIndex + 1}`;
-    document.getElementById('consoleExamTitle').textContent = examQuestions[currentIndex].exam || "RRB EXAM SIMULATOR";
     
     populateQuestionText();
     populateOptionsGrid();
