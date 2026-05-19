@@ -1,0 +1,190 @@
+:root {
+    --bg-color: #f4f6f9;
+    --card-bg: #ffffff;
+    --text-primary: #2d3748;
+    --primary-color: #4a5568;
+    --accent-color: #3182ce;
+    --success-color: #38a169;
+    --danger-color: #e53e3e;
+    --border-color: #e2e8f0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    min-height: 100vh;
+}
+
+.sidebar {
+    background-color: #1a202c;
+    color: #fff;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    border-right: 1px solid var(--border-color);
+}
+
+.sidebar h2 { margin-top: 0; font-size: 1.4rem; }
+
+.config-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.config-group label { font-size: 0.9rem; color: #a0aec0; font-weight: 600; }
+
+input[type="number"], input[type="file"] {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #4a5568;
+    background: #2d3748;
+    color: white;
+    box-sizing: border-box;
+}
+
+.radio-group, .radio-vertical {
+    display: flex;
+    color: #e2e8f0;
+}
+.radio-group { gap: 15px; }
+.radio-vertical { flex-direction: column; gap: 8px; }
+
+.quiz-area {
+    padding: 40px;
+    max-width: 900px;
+    margin: 0 auto;
+    width: -webkit-fill-available;
+}
+
+.info-box {
+    background: #ebf8ff;
+    border-left: 4px solid var(--accent-color);
+    padding: 20px;
+    border-radius: 4px;
+}
+
+.hidden { display: none !important; }
+
+.quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    background: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.progress-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.badge {
+    background: #edf2f7;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #4a5568;
+}
+
+/* Running Digital Timer and Progress Layout Row styling */
+.timer-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 250px;
+}
+
+.running-timer {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #2b6cb0;
+    font-family: monospace;
+    min-width: 50px;
+    text-align: right;
+}
+
+.timer-bg-bar {
+    width: 100%;
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.timer-bar {
+    height: 100%;
+    background-color: var(--accent-color);
+    width: 100%;
+    transition: width 0.2s linear, background-color 0.5s ease;
+}
+
+/* Question layout boxes */
+.q-box {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+.q-box h3 { margin: 0 0 8px 0; color: #718096; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;}
+.q-text { font-size: 1.25rem; line-height: 1.6; margin: 0; font-weight: 500;}
+.q-divider { border: 0; border-top: 1px dashed #cbd5e0; margin: 15px 0; }
+
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin: 25px 0;
+}
+
+.option-card {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    padding: 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+}
+
+.option-card:hover { border-color: var(--accent-color); background: #f7fafc; }
+
+.option-card.selected {
+    border-color: var(--accent-color);
+    background: #ebf8ff;
+    font-weight: 600;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+}
+.btn-primary { background: var(--accent-color); color: white; }
+.btn-success { background: var(--success-color); color: white; width: 100%;}
+.btn-danger { background: var(--danger-color); color: white; margin-top: auto;}
+
+.score-metric { font-size: 3.5rem; font-weight: bold; color: var(--success-color); margin: 20px 0;}
+.text-center { text-align: center; }
