@@ -5,11 +5,12 @@ let currentIndex = 0;
 
 let userAnswers = {}; // Mapping schema: { index: { selected: 'A', status: 'answered'|'review'|'timeout'|'skipped' } }
 let questionStatuses = []; // Array statuses: 'notvisited', 'notanswered', 'answered', 'review'
+let questionTimers = {}; // NEW: Tracks remaining time per individual question index { 0: 45, 1: 60, ... }
 
 let globalCountdown = null;
-let timeLeft = 0;
 let timerMode = "perQuestion"; // 'perQuestion' or 'overall'
 let totalDurationConfig = 60;
+let overallTimeLeft = 0; // Global clock tracker for the total exam mode
 
 // --- Bindings Selectors ---
 const fileUploader = document.getElementById('fileUploader');
@@ -73,6 +74,7 @@ startExamBtn.onclick = () => {
     
     questionStatuses = new Array(examQuestions.length).fill('notvisited');
     userAnswers = {};
+    questionTimers = {}; // Reset visual clock memories
     currentIndex = 0;
     questionStatuses[0] = 'notanswered';
     
@@ -81,10 +83,13 @@ startExamBtn.onclick = () => {
     // Configure running timer properties accurately
     const rawTimeInput = parseInt(timerInput.value) || 60;
     if (timerMode === 'overall') {
-        timeLeft = rawTimeInput * 60; // Minutes translated cleanly to seconds
+        overallTimeLeft = rawTimeInput * 60; // Minutes translated cleanly to seconds
     } else {
         totalDurationConfig = rawTimeInput;
-        timeLeft = totalDurationConfig;
+        // Seed the default clock duration for every single parsed question card item
+        examQuestions.forEach((_, idx) => {
+            questionTimers[idx] = totalDurationConfig;
+        });
     }
     
     configScreen.classList.add('hidden');
@@ -94,7 +99,7 @@ startExamBtn.onclick = () => {
     renderQuestionIndex();
     
     // Fire full overall exam counting track right here if mode is enabled
-    if (timerMode === 'overall') initiateTimerCountdownLoop();
+    if (timerMode === 'overall') initiateOverallExamTimerLoop();
 };
 
 consoleLangPref.onchange = () => { if (examQuestions.length > 0) populateQuestionText(); };
@@ -146,11 +151,10 @@ function updatePaletteMetrics() {
 function renderQuestionIndex() {
     if (timerMode === 'perQuestion') {
         clearInterval(globalCountdown);
-        timeLeft = totalDurationConfig;
     }
     
     if (currentIndex >= examQuestions.length) {
-        currentIndex = examQuestions.length - 1; // Cap navigation limit boundaries
+        currentIndex = examQuestions.length - 1; 
     }
     
     document.getElementById('questionNumTitle').textContent = `Question No. ${currentIndex + 1}`;
@@ -160,7 +164,7 @@ function renderQuestionIndex() {
     populateOptionsGrid();
     updatePaletteMetrics();
     
-    if (timerMode === 'perQuestion') initiateTimerCountdownLoop();
+    if (timerMode === 'perQuestion') initiatePerQuestionTimerLoop();
 }
 
 function populateQuestionText() {
@@ -203,34 +207,64 @@ function populateOptionsGrid() {
     });
 }
 
-// --- Active Timer Countdown Framework Engine Loop ---
-function initiateTimerCountdownLoop() {
+// --- FIXED: Per-Question Timer System (Remembers Time Left) ---
+function initiatePerQuestionTimerLoop() {
     const textNode = document.getElementById('timerText');
     
+    // If this question ran out of time entirely before, keep it locked at 0s
+    if (questionTimers[currentIndex] <= 0) {
+        textNode.textContent = "00:00";
+        textNode.style.color = '#ea2027';
+        return;
+    }
+
     function drawClock() {
-        let mins = Math.floor(timeLeft / 60);
-        let secs = timeLeft % 60;
+        let currentRemaining = questionTimers[currentIndex];
+        let mins = Math.floor(currentRemaining / 60);
+        let secs = currentRemaining % 60;
         textNode.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-        if (timeLeft <= 15) textNode.style.color = '#ea2027';
+        
+        if (currentRemaining <= 10) textNode.style.color = '#ea2027';
         else textNode.style.color = '#00d2d3';
     }
     
     drawClock();
     globalCountdown = setInterval(() => {
-        timeLeft--;
+        questionTimers[currentIndex]--;
         drawClock();
         
-        if (timeLeft <= 0) {
+        if (questionTimers[currentIndex] <= 0) {
             clearInterval(globalCountdown);
-            if (timerMode === 'perQuestion') {
-                if (questionStatuses[currentIndex] !== 'answered' && questionStatuses[currentIndex] !== 'review') {
-                    userAnswers[currentIndex] = { selected: null, status: 'timeout' };
-                }
-                advanceNextExamIndex();
-            } else {
-                alert("⏰ Time is completely up! Finalizing exam audit evaluation scorecard sheet parameters now.");
-                completeExamValidation();
+            if (questionStatuses[currentIndex] !== 'answered' && questionStatuses[currentIndex] !== 'review') {
+                userAnswers[currentIndex] = { selected: null, status: 'timeout' };
+                questionStatuses[currentIndex] = 'notanswered';
             }
+            advanceNextExamIndex();
+        }
+    }, 1000);
+}
+
+// --- Total Exam Countdown Timer Mode Loop ---
+function initiateOverallExamTimerLoop() {
+    const textNode = document.getElementById('timerText');
+    
+    function drawClock() {
+        let mins = Math.floor(overallTimeLeft / 60);
+        let secs = overallTimeLeft % 60;
+        textNode.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+        if (overallTimeLeft <= 60) textNode.style.color = '#ea2027'; // Red warning on last remaining minute
+        else textNode.style.color = '#00d2d3';
+    }
+    
+    drawClock();
+    globalCountdown = setInterval(() => {
+        overallTimeLeft--;
+        drawClock();
+        
+        if (overallTimeLeft <= 0) {
+            clearInterval(globalCountdown);
+            alert("⏰ Overall Exam Time is completely over! Submitting answers sheet now.");
+            completeExamValidation();
         }
     }, 1000);
 }
@@ -247,11 +281,13 @@ function jumpToQuestionIndex(targetIdx) {
     renderQuestionIndex();
 }
 
-// --- Action Execution Footer Mechanics ---
+// --- FIXED BUTTON EVENT LISTENERS ACTIONS ---
+
+// 1. Save & Next Button
 document.getElementById('submitBtn').onclick = () => {
     const selectedInput = document.querySelector('input[name="opt"]:checked');
     if (!selectedInput) {
-        alert("Please make a selection, or use 'Clear Response' / Palette index items to skip.");
+        alert("Please select an option before saving. If you don't know the answer, use 'Skip/Mark for Review'.");
         return;
     }
     userAnswers[currentIndex] = { selected: selectedInput.value, status: 'answered' };
@@ -259,7 +295,7 @@ document.getElementById('submitBtn').onclick = () => {
     advanceNextExamIndex();
 };
 
-// UPGRADED: Mark For Review Action Logic Hook
+// 2. Mark For Review Button
 document.getElementById('reviewBtn').onclick = () => {
     const selectedInput = document.querySelector('input[name="opt"]:checked');
     userAnswers[currentIndex] = { 
@@ -270,18 +306,23 @@ document.getElementById('reviewBtn').onclick = () => {
     advanceNextExamIndex();
 };
 
+// 3. Clear Response Button
 document.getElementById('clearResponseBtn').onclick = () => {
     userAnswers[currentIndex] = null;
-    questionStatuses[currentIndex] = 'notanswered';
+    if (questionStatuses[currentIndex] === 'answered' || questionStatuses[currentIndex] === 'review') {
+        questionStatuses[currentIndex] = 'notanswered';
+    }
     populateOptionsGrid();
     updatePaletteMetrics();
 };
 
+// 4. Skip Button Handler (Triggered when user skips natively via index limits)
 function advanceNextExamIndex() {
     if (currentIndex < examQuestions.length - 1) {
         currentIndex++;
         renderQuestionIndex();
     } else if (timerMode === 'perQuestion') {
+        // If we reached the final question item under per-question setup, trigger results compilation
         completeExamValidation();
     }
 }
@@ -343,13 +384,11 @@ function completeExamValidation() {
         auditContainer.appendChild(card);
     });
     
-    // Draw Metrics Dashboard Overview data counters
     const totalQ = examQuestions.length;
     document.getElementById('resScore').textContent = totalScore;
     document.getElementById('resTotal').textContent = totalQ;
     document.getElementById('resAccuracy').textContent = `${((totalScore / totalQ) * 100).toFixed(1)}%`;
     
-    // Render Upgraded Metric Progress bar elements width lengths layouts
     document.getElementById('barCorrect').style.width = `${(totalScore / totalQ) * 100}%`;
     document.getElementById('barWrong').style.width = `${(wrongCount / totalQ) * 100}%`;
     document.getElementById('barSkipped').style.width = `${(reviewSkippedCount / totalQ) * 100}%`;
@@ -361,7 +400,7 @@ document.getElementById('calcToggleBtn').onclick = () => calcPad.classList.toggl
 document.getElementById('calcCloseBtn').onclick = () => calcPad.classList.add('hidden');
 
 let calcExpression = "";
-function pressCalcKey(key) {
+window.pressCalcKey = function(key) {
     const disp = document.getElementById('calcDisplay');
     if (key === 'C') {
         calcExpression = "";
