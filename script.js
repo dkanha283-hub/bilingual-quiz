@@ -131,6 +131,7 @@ async function syncCloudRepositoryBankList() {
     cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#718096; font-size:0.85rem;">Connecting...</div>`;
     
     try {
+        // FIXED: Using standard Bearer Token formatting along with mandatory API User-Agent criteria
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${targetFolder}`, {
             headers: { 
                 'Authorization': `Bearer ${ghToken}`, 
@@ -144,9 +145,9 @@ async function syncCloudRepositoryBankList() {
             return;
         }
 
-        if (res.status === 401) {
-            apiStatusLog.textContent = "Status: 401 Unauthorized (Bad Token)";
-            cloudBankFilesContainer.innerHTML = `<div style="color:red; text-align:center; padding:10px;">Invalid GitHub Token!</div>`;
+        if (res.status === 401 || res.status === 403) {
+            apiStatusLog.textContent = `Status: Auth Rejected (Error ${res.status})`;
+            cloudBankFilesContainer.innerHTML = `<div style="color:red; text-align:center; padding:10px;">Bad Credentials or Expired Token!</div>`;
             return;
         }
 
@@ -302,7 +303,6 @@ fileUploader.addEventListener('change', (e) => {
                 questionLimitInput.max = fileQuestions.length;
                 questionLimitInput.value = Math.min(20, fileQuestions.length);
                 
-                // If token is connected, try saving to cloud. If not, it still runs beautifully locally!
                 pushJsonBankToCloud(file.name, rawText);
             }
         } catch(e) { alert("JSON validation error."); }
