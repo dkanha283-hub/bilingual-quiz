@@ -3,84 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bilingual Quiz Master</title>
+    <title>RRB Online Exam Console (TCS iON Mock)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <aside class="sidebar">
-            <h2>🛠️ Configurations</h2>
-            
-            <div class="config-group">
-                <label for="timerInput">Timer per Question (seconds):</label>
-                <input type="number" id="timerInput" min="10" max="300" value="60">
-            </div>
 
-            <div class="config-group">
-                <label>Test Language / परीक्षा की भाषा:</label>
-                <div class="radio-vertical">
-                    <label><input type="radio" name="langPref" value="en" checked> English Only</label>
-                    <label><input type="radio" name="langPref" value="hi"> Hindi Only (हिंदी)</label>
-                    <label><input type="radio" name="langPref" value="both"> Bilingual (Both Side-by-Side)</label>
-                </div>
-            </div>
-
-            <div class="config-group">
-                <label>Question Order:</label>
-                <div class="radio-group">
-                    <label><input type="radio" name="orderType" value="sequential" checked> Sequential</label>
-                    <label><input type="radio" name="orderType" value="shuffled"> Shuffled</label>
-                </div>
-            </div>
-
-            <div class="config-group">
-                <label for="fileUploader">Upload Questions (JSON):</label>
+    <div id="configScreen" class="setup-container">
+        <div class="setup-card">
+            <h2>⚙️ RRB Exam Console - Setup Panel</h2>
+            <hr>
+            <div class="setup-group">
+                <label for="fileUploader"><strong>1. Select Question Bank (JSON):</strong></label>
                 <input type="file" id="fileUploader" accept=".json">
             </div>
-
-            <button id="clearBtn" class="btn btn-danger">🗑️ Clear / Reset Data</button>
-        </aside>
-
-        <main class="quiz-area">
-            <div id="uploadPrompt" class="info-box">
-                👈 Please upload your <code>percentage_sheet_questions.json</code> file in the sidebar to get started.
+            
+            <div class="setup-group">
+                <label for="questionLimitInput"><strong>2. Number of Questions to Solve:</strong></label>
+                <input type="number" id="questionLimitInput" min="1" value="20" placeholder="e.g., 20">
+                <small style="color:#718096;">Leaves it at default or matches max file size if smaller.</small>
             </div>
 
-            <div id="quizContainer" class="hidden">
-                <div class="quiz-header">
-                    <div class="progress-info">
-                        <span id="questionNum">Question 1 of 0</span>
-                        <span id="examTarget" class="badge"></span>
-                    </div>
-                    <div class="timer-wrapper">
-                        <span id="timerText" class="running-timer">60s</span>
-                        <div class="timer-bg-bar">
-                            <div id="timerBar" class="timer-bar"></div>
-                        </div>
-                    </div>
-                </div>
+            <div class="setup-group">
+                <label for="timerInput"><strong>3. Timer per Question (seconds):</strong></label>
+                <input type="number" id="timerInput" min="5" max="600" value="60">
+            </div>
 
-                <div id="questionDisplayContainer"></div>
+            <div class="setup-group">
+                <label><strong>4. Default Language Preference:</strong></label>
+                <select id="langPrefSetup">
+                    <option value="en">English Only</option>
+                    <option value="hi">Hindi Only (हिंदी)</option>
+                    <option value="both">Bilingual (Both Stacked)</option>
+                </select>
+            </div>
 
-                <hr>
-
-                <div id="optionsContainer" class="options-grid"></div>
-
-                <div class="quiz-footer">
-                    <button id="submitBtn" class="btn btn-success">Submit Answer & Next ➡️</button>
+            <div class="setup-group">
+                <label><strong>5. Question Sequencing:</strong></label>
+                <div class="radio-row">
+                    <label><input type="radio" name="orderType" value="sequential" checked> Sequential</label>
+                    <label><input type="radio" name="orderType" value="shuffled"> Shuffled Order</label>
                 </div>
             </div>
 
-            <div id="resultContainer" class="hidden text-center">
-                <h2>🎉 Quiz Completed!</h2>
-                <div class="score-metric">
-                    <span id="finalScore">0</span> / <span id="totalQuestions">0</span>
-                </div>
-                <p id="accuracyText">Accuracy Rate: 0%</p>
-                <button id="restartBtn" class="btn btn-primary">Restart Quiz</button>
-            </div>
-        </main>
+            <button id="startExamBtn" class="tcs-btn tcs-btn-blue" disabled>🔒 Start Exam</button>
+        </div>
     </div>
+
+    <div id="examConsole" class="hidden tcs-main-grid">
+        <header class="tcs-header">
+            <div class="tcs-logo-area">
+                <span class="exam-title-text" id="consoleExamTitle">RRB ONLINE EXAMINATION</span>
+            </div>
+            <div class="tcs-timer-box">
+                <span class="timer-label">Time Left:</span>
+                <span id="timerText" class="timer-countdown">00:00</span>
+            </div>
+        </header>
+
+        <div class="tcs-body-wrapper">
+            <main class="tcs-left-panel">
+                <div class="question-header-row">
+                    <span id="questionNumTitle" class="q-number-title">Question No. 1</span>
+                    <div class="tcs-lang-dropdown-wrapper">
+                        <label for="consoleLangPref">View In: </label>
+                        <select id="consoleLangPref">
+                            <option value="en">English</option>
+                            <option value="hi">Hindi</option>
+                            <option value="both">Bilingual</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="questionDisplayContainer" class="tcs-question-box"></div>
+
+                <div id="optionsContainer" class="tcs-options-container"></div>
+            </main>
+
+            <aside class="tcs-right-panel">
+                <div class="candidate-info">
+                    <div class="dummy-avatar">👤</div>
+                    <div class="candidate-details">
+                        <strong>John Doe</strong>
+                        <span style="font-size:0.8rem; color:#718096;">Subject: Mathematics</span>
+                    </div>
+                </div>
+
+                <div class="status-legend-grid">
+                    <div class="legend-item"><span class="badge-box badge-answered" id="legendAnsweredCount">0</span> Answered</div>
+                    <div class="legend-item"><span class="badge-box badge-notanswered" id="legendNotAnsweredCount">0</span> Not Answered</div>
+                    <div class="legend-item"><span class="badge-box badge-notvisited" id="legendNotVisitedCount">0</span> Not Visited</div>
+                </div>
+
+                <div class="palette-title">Question Palette :</div>
+                <div id="paletteGrid" class="tcs-palette-grid"></div>
+            </aside>
+        </div>
+
+        <footer class="tcs-footer">
+            <button id="skipBtn" class="tcs-btn tcs-btn-gray">⏩ Skip Question</button>
+            <button id="submitBtn" class="tcs-btn tcs-btn-green" style="margin-left: auto;">Save & Next ➡️</button>
+        </footer>
+    </div>
+
+    <div id="resultScreen" class="hidden review-container">
+        <div class="result-summary-card">
+            <h2>📊 Performance Summary Report</h2>
+            <div class="summary-metrics-row">
+                <div class="metric-block"><span id="resScore">0</span>Score</div>
+                <div class="metric-block"><span id="resTotal">0</span>Attempted</div>
+                <div class="metric-block"><span id="resAccuracy">0%</span>Accuracy</div>
+            </div>
+            <button id="restartBtn" class="tcs-btn tcs-btn-blue">🔄 Load New Exam Module</button>
+        </div>
+
+        <h3>📝 Detailed Question Paper Audit Trail</h3>
+        <div id="reviewAuditTrailContainer" class="audit-trail-wrapper"></div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
