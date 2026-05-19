@@ -13,6 +13,7 @@ let totalDurationConfig = 60;
 let overallTimeLeft = 0; 
 let operationMode = "exam"; 
 let hasCheckedAnswer = false; 
+let isExamEnded = false; // NEW FIXED GUARD: Blocks cheating after time ends!
 
 // GitHub Sync Management States
 let ghToken = "";
@@ -32,7 +33,7 @@ const defaultPercentageSheetQuestions = [
     {"question_number":9,"text_en":"If x% of a is the same as y% of b, then z% of b will be","text_hi":"यदि a का x%, b के y% के समान है, तो b का z% होगा","exam":null,"options":{"A":"(yz/x)% of a","B":"(zx/y)% of a","C":"(xy/z)% of a","D":"(y/z)% of a"},"correct_answer":"D"},
     {"question_number":10,"text_en":"If 85% of (x-y) = 25% of (x+y) Then y is what percentage of x?","text_hi":"यदि (x-y) का 85% = (x+y) का 25% है, तो y, x का कितना प्रतिशत है?","exam":"SSC GD 2023","options":{"A":"51_4/11%","B":"54_6/11%","C":"55_1/11%","D":"58_3/11%"},"correct_answer":"B"},
     {"question_number":11,"text_en":"Two numbers A and B are such that the sum of 8% of A and 5% of B is three-fifth of the sum of 12% of A and 10% of B. The ratio of A and B is:","text_hi":"A और B दो संख्याए इस प्रकार हैं कि A के 8% और B के 5% का योग, A के 12% और B के 10% के योग का 3/5 भाग है। A और B का अनुपात कितना है?","exam":null,"options":{"A":"6:11","B":"11:6","C":"11:6","D":"no_option_d"},"correct_answer":"B"},
-    {"question_number":12,"text_en":"The population of a town is increased from 60,000 to 61,050. How much is the percentage increase?","text_hi":"किसी कस्बे की जनसंख्या 60,000 से बढ़कर 61,050 हो जाती है। वृद्धि प्रतिशत कितना है?","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"1.65%","B":"1.55%","C":"1.85%","D":"1.75%"},"correct_answer":"B"},
+    {"question_number":12,"text_en":"The population of a town is increased from 60,000 to 61,050. How much is the percentage increase?","text_hi":"Kisi कस्बे की जनसंख्या 60,000 से बढ़कर 61,050 हो जाती है। वृद्धि प्रतिशत कितना है?","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"1.65%","B":"1.55%","C":"1.85%","D":"1.75%"},"correct_answer":"B"},
     {"question_number":13,"text_en":"Monthly expenditure of Ritvik decreases from 12,800 to 11,712. Find the percentage decrease in his expenditure.","text_hi":"ऋत्विक का मासिक खर्च ₹12,800 से घटकर ₹11,712 हो गया। उसके व्यय में प्रतिशत कमी ज्ञात कीजिये।","exam":"SSC CHSL 2024","options":{"A":"7.7%","B":"6.25%","C":"8.5%","D":"9.25%"},"correct_answer":"D"},
     {"question_number":20,"text_en":"A number, when decreased by 7%, gives 3720. The number is:","text_hi":"किसी संख्या में 7% की कमी करने पर 3720 प्राप्त होता है। वह संख्या ज्ञात कीजिए।","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"2000","B":"4000","C":"12000","D":"8000"},"correct_answer":"a"},
     {"question_number":21,"text_en":"A number, when increased by 60%, gives 3570. The number is:","text_hi":"एक संख्या में 60% की वृद्धि करने पर 3570 प्राप्त होता है। वह संख्या ज्ञात कीजिए।","exam":null,"options":{"A":"6693.75", "B":"4462.5", "C":"1115.625", "D":"2231.25"},"correct_answer":"b"},
@@ -68,11 +69,8 @@ if(document.getElementById('paletteToggleBtn')) {
     document.getElementById('paletteCloseBtn').addEventListener('click', () => rightPaletteSidebar.classList.add('mobile-hidden'));
 }
 
-// --- FIXED: LISTEN FOR LIVE LANGUAGE SWITCHES DURING EXAM ---
 consoleLangPref.addEventListener('change', () => {
-    if (examQuestions.length > 0) {
-        populateQuestionText();
-    }
+    if (examQuestions.length > 0) populateQuestionText();
 });
 
 // --- RESUMABLE AUTO-SAVE ENGINE ---
@@ -101,6 +99,7 @@ bankSourceDropdown.addEventListener('change', (e) => {
 });
 
 function commitCurrentSessionProgressToCache() {
+    if (isExamEnded) return; // Prevent overwriting cache post-completion
     localStorage.setItem('rrb_quiz_active_state', 'true');
     localStorage.setItem('rrb_quiz_examQuestions', JSON.stringify(examQuestions));
     localStorage.setItem('rrb_quiz_currentIndex', currentIndex);
@@ -141,6 +140,7 @@ document.getElementById('resumeConfirmBtn').onclick = () => {
         totalDurationConfig = parseInt(localStorage.getItem('rrb_quiz_totalDurationConfig'));
         consoleLangPref.value = localStorage.getItem('rrb_quiz_consoleLangPref');
         operationMode = localStorage.getItem('rrb_quiz_operationMode');
+        isExamEnded = false;
 
         configScreen.classList.add('hidden');
         examConsole.classList.remove('hidden');
@@ -171,12 +171,7 @@ document.getElementById('connectGhBtn').addEventListener('click', (e) => {
     e.preventDefault();
     ghToken = document.getElementById('ghTokenInput').value.trim();
     ghRepo = document.getElementById('ghRepoInput').value.trim();
-    
-    if(!ghToken || !ghRepo) {
-        if(apiStatusLog) apiStatusLog.textContent = "Status: Missing fields!";
-        return;
-    }
-    
+    if(!ghToken || !ghRepo) return;
     localStorage.setItem('rrb_git_token', ghToken);
     localStorage.setItem('rrb_git_repo', ghRepo);
     syncCloudRepositoryBankList();
@@ -186,81 +181,40 @@ async function syncCloudRepositoryBankList() {
     ghToken = document.getElementById('ghTokenInput').value.trim();
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     if (!ghToken || !ghRepo) return;
-    
-    if(apiStatusLog) apiStatusLog.textContent = "Status: Reaching GitHub servers...";
-    
     try {
         const headers = { 
             'Accept': 'application/vnd.github.v3+json',
             'Authorization': `token ${ghToken}`
         };
-
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${targetFolder}?cb=${Date.now()}`, { headers });
-        
-        if (res.status === 404) {
-            if(apiStatusLog) apiStatusLog.textContent = "Status: Active! Folder ready.";
-            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#2b6cb0; font-size:0.85rem; font-weight:bold;">☁️ Connected! Upload your JSON files below to sync them to the cloud directory.</div>`;
-            return;
-        }
-
-        if (!res.ok) {
-            if(apiStatusLog) apiStatusLog.textContent = `Status: Auth Blocked (Code ${res.status})`;
-            cloudBankFilesContainer.innerHTML = `<div style="color:red; text-align:center; padding:10px; font-size:0.85rem;">Authentication Failed! Double-check token privileges.</div>`;
-            return;
-        }
+        if (res.status === 404) return;
+        if (!res.ok) return;
 
         const files = await res.json();
         const jsonFiles = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json')) : [];
 
-        if(apiStatusLog) apiStatusLog.textContent = `Status: Active (${jsonFiles.length} cloud files synced)`;
-
-        if(jsonFiles.length === 0) {
-            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#64748b; font-size:0.85rem;">Folder initialized. No JSON assets present.</div>`;
-            return;
-        }
-
-        cloudBankFilesContainer.innerHTML = '';
-        
-        bankSourceDropdown.innerHTML = `
-            <option value="default_percentage">Default Pre-loaded: Percentage Sheet</option>
-            <option value="local_upload">Upload custom JSON file...</option>
-        `;
-        
-        jsonFiles.forEach(file => {
-            const row = document.createElement('div');
-            row.className = 'cloud-file-row';
-            row.innerHTML = `
-                <span class="cloud-file-name">${file.name}</span>
-                <button class="cloud-file-delete">×</button>
-            `;
+        if(jsonFiles.length > 0) {
+            cloudBankFilesContainer.innerHTML = '';
+            bankSourceDropdown.innerHTML = `<option value="default_percentage">Default Pre-loaded: Percentage Sheet</option><option value="local_upload">Upload custom JSON file...</option>`;
             
-            row.querySelector('.cloud-file-name').addEventListener('click', () => loadRemoteJsonBank(file.path));
-            row.querySelector('.cloud-file-delete').addEventListener('click', () => deleteRemoteJsonBank(file.path, file.sha));
-            cloudBankFilesContainer.appendChild(row);
+            jsonFiles.forEach(file => {
+                const row = document.createElement('div');
+                row.className = 'cloud-file-row';
+                row.innerHTML = `
+                    <span class="cloud-file-name">${file.name}</span>
+                    <button class="cloud-file-delete">×</button>
+                `;
+                row.querySelector('.cloud-file-name').addEventListener('click', () => loadRemoteJsonBank(file.path));
+                row.querySelector('.cloud-file-delete').addEventListener('click', () => deleteRemoteJsonBank(file.path, file.sha));
+                cloudBankFilesContainer.appendChild(row);
 
-            const opt = document.createElement('option');
-            opt.value = `cloud_${file.path}`;
-            opt.textContent = `Cloud Asset: ${file.name}`;
-            bankSourceDropdown.appendChild(opt);
-        });
-
-        bankSourceDropdown.onchange = (e) => {
-            if(e.target.value.startsWith('cloud_')) {
-                localFilePickerWrapper.classList.add('hidden');
-                loadRemoteJsonBank(e.target.value.replace('cloud_', ''));
-            } else if(e.target.value === 'local_upload') {
-                localFilePickerWrapper.classList.remove('hidden');
-                fileQuestions = [];
-            } else {
-                localFilePickerWrapper.classList.add('hidden');
-                fileQuestions = defaultPercentageSheetQuestions;
-                questionLimitInput.max = fileQuestions.length;
-                questionLimitInput.value = fileQuestions.length;
-            }
-        };
-    } catch (err) { 
-        if(apiStatusLog) apiStatusLog.textContent = "Status: API Handshake Failed.";
-    }
+                const opt = document.createElement('option');
+                opt.value = `cloud_${file.path}`;
+                opt.textContent = `Cloud Asset: ${file.name}`;
+                bankSourceDropdown.appendChild(opt);
+            });
+        }
+    } catch (err) { console.error(err); }
 }
 
 async function loadRemoteJsonBank(path) {
@@ -275,7 +229,6 @@ async function loadRemoteJsonBank(path) {
         if (fileQuestions.length > 0) {
             questionLimitInput.max = fileQuestions.length;
             questionLimitInput.value = fileQuestions.length;
-            alert(`Asset loaded into active context: ${path.split('/').pop()}`);
         }
     } catch(err) { alert("Failed pulling cloud data asset."); }
 }
@@ -285,54 +238,18 @@ async function pushJsonBankToCloud(fileName, stringContent) {
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     if (!ghToken || !ghRepo) return;
 
-    if(apiStatusLog) apiStatusLog.textContent = "Status: Syncing file payload...";
-
     const base64Content = btoa(encodeURIComponent(stringContent).replace(/%([0-9A-F]{2})/g, function(match, p1) {
         return String.fromCharCode('0x' + p1);
     }));
-    
     const path = `${targetFolder}/${fileName}`;
-
     try {
         await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
             method: 'PUT',
-            headers: { 
-                'Authorization': `token ${ghToken}`, 
-                'Content-Type': 'application/json' 
-            },
-            body: JSON.stringify({
-                message: `Sync question file: ${fileName}`,
-                content: base64Content
-            })
+            headers: { 'Authorization': `token ${ghToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: `Sync question file: ${fileName}`, content: base64Content })
         });
-        if(apiStatusLog) apiStatusLog.textContent = "Status: Synced perfectly!";
         setTimeout(syncCloudRepositoryBankList, 1500);
     } catch (err) { console.error(err); }
-}
-
-window.deleteRemoteJsonBank = async function(path, sha) {
-    if(!confirm("Are you sure you want to delete this asset from your cloud repository folder?")) return;
-    
-    ghToken = document.getElementById('ghTokenInput').value.trim();
-    ghRepo = document.getElementById('ghRepoInput').value.trim();
-
-    try {
-        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
-            method: 'DELETE',
-            headers: { 
-                'Authorization': `token ${ghToken}`, 
-                'Content-Type': 'application/json' 
-            },
-            body: JSON.stringify({
-                message: `Purge item: ${path}`,
-                sha: sha
-            })
-        });
-        if(res.ok) {
-            alert("File erased from GitHub directory successfully.");
-            setTimeout(syncCloudRepositoryBankList, 1000);
-        }
-    } catch (err) { alert("API interaction failed."); }
 }
 
 // --- STANDARD EXAM CONSOLE MANAGEMENT TRACKS ---
@@ -350,7 +267,7 @@ fileUploader.addEventListener('change', (e) => {
                 questionLimitInput.value = fileQuestions.length;
                 pushJsonBankToCloud(file.name, rawText);
             }
-        } catch(e) { alert("JSON file validation error."); }
+        } catch(e) { alert("JSON validation error."); }
     };
     reader.readAsText(file);
 });
@@ -360,6 +277,7 @@ startExamBtn.onclick = () => {
         alert("Please select or upload a valid quiz data model first.");
         return;
     }
+    isExamEnded = false; // Reset lock switch
     timerMode = document.querySelector('input[name="timerMode"]:checked').value;
     operationMode = document.querySelector('input[name="assessmentMode"]:checked').value;
     
@@ -409,6 +327,7 @@ function buildPaletteGridUI() {
         cell.id = `palette-cell-${idx}`;
         cell.textContent = idx + 1;
         cell.onclick = () => {
+            if (isExamEnded) return; // FIXED: Block switching panel post-completion
             jumpToQuestionIndex(idx);
             rightPaletteSidebar.classList.add('mobile-hidden'); 
         };
@@ -489,7 +408,10 @@ function populateOptionsGrid() {
         
         row.innerHTML = `<input type="radio" name="opt" value="${key}" ${savedAnswer && savedAnswer.selected === key ? 'checked' : ''}> <span><strong>(${key})</strong> ${val}</span>`;
         row.onclick = () => {
+            // FIXED GUARD: Terminate selection inputs if exam flag says finished
+            if (isExamEnded) return;
             if (operationMode === "practice" && hasCheckedAnswer) return;
+            
             row.querySelector('input').checked = true;
             document.querySelectorAll('.tcs-option-row').forEach(r => r.classList.remove('selected'));
             row.classList.add('selected');
@@ -502,6 +424,7 @@ function populateOptionsGrid() {
 }
 
 document.getElementById('practiceCheckBtn').onclick = () => {
+    if (isExamEnded) return; // FIXED GUARD
     const selectedInput = document.querySelector('input[name="opt"]:checked');
     if (!selectedInput) { alert("Please pick an option first."); return; }
     
@@ -532,6 +455,7 @@ function initiatePerQuestionTimerLoop() {
     }
     drawClock();
     globalCountdown = setInterval(() => {
+        if (isExamEnded) { clearInterval(globalCountdown); return; } // FIXED
         questionTimers[currentIndex]--;
         drawClock();
         commitCurrentSessionProgressToCache(); 
@@ -557,17 +481,21 @@ function initiateOverallExamTimerLoop() {
     }
     drawClock();
     globalCountdown = setInterval(() => {
+        if (isExamEnded) { clearInterval(globalCountdown); return; } // FIXED
         overallTimeLeft--;
         drawClock();
         commitCurrentSessionProgressToCache();
         if (overallTimeLeft <= 0) {
             clearInterval(globalCountdown);
+            isExamEnded = true; // Freeze console parameters instantly
+            alert("⏰ Total Exam Time Completed! Submitting your results right now.");
             completeExamValidation();
         }
     }, 1000);
 }
 
 function jumpToQuestionIndex(targetIdx) {
+    if (isExamEnded) return; // FIXED GUARD
     if (timerMode === 'perQuestion') clearInterval(globalCountdown);
     if (questionStatuses[currentIndex] !== 'answered' && questionStatuses[currentIndex] !== 'review') {
         questionStatuses[currentIndex] = 'notanswered';
@@ -578,6 +506,7 @@ function jumpToQuestionIndex(targetIdx) {
 }
 
 document.getElementById('submitBtn').onclick = () => {
+    if (isExamEnded) return; // FIXED GUARD
     const selectedInput = document.querySelector('input[name="opt"]:checked');
     if (operationMode === "practice") {
         if (selectedInput && !hasCheckedAnswer) {
@@ -596,6 +525,7 @@ document.getElementById('submitBtn').onclick = () => {
 };
 
 document.getElementById('reviewBtn').onclick = () => {
+    if (isExamEnded) return; // FIXED GUARD
     const selectedInput = document.querySelector('input[name="opt"]:checked');
     userAnswers[currentIndex] = { selected: selectedInput ? selectedInput.value : null, status: 'review' };
     questionStatuses[currentIndex] = 'review';
@@ -603,6 +533,7 @@ document.getElementById('reviewBtn').onclick = () => {
 };
 
 document.getElementById('clearResponseBtn').onclick = () => {
+    if (isExamEnded) return; // FIXED GUARD
     if (operationMode === "practice" && hasCheckedAnswer) return; 
     userAnswers[currentIndex] = null;
     if (questionStatuses[currentIndex] === 'answered' || questionStatuses[currentIndex] === 'review') {
@@ -618,17 +549,27 @@ function advanceNextExamIndex() {
         currentIndex++;
         renderQuestionIndex();
     } else if (timerMode === 'perQuestion') {
+        isExamEnded = true; // Lock on final question submission
         completeExamValidation();
     }
 }
 
 document.getElementById('finishExamBtn').onclick = () => {
-    if (confirm("Submit your test paper console?")) completeExamValidation();
+    if (isExamEnded) return; // FIXED GUARD
+    if (confirm("Submit your test paper console?")) {
+        isExamEnded = true;
+        completeExamValidation();
+    }
 };
 
 function completeExamValidation() {
+    isExamEnded = true; // Final safety switch activation
     clearInterval(globalCountdown);
     wipeSessionProgressCache(); 
+    
+    // Explicitly lock down matching interactive nodes elements inputs values
+    document.querySelectorAll('.tcs-option-row').forEach(row => row.style.pointerEvents = 'none');
+    
     examConsole.classList.add('hidden');
     resultScreen.classList.remove('hidden');
     
@@ -675,6 +616,7 @@ document.getElementById('calcCloseBtn').onclick = () => calcPad.classList.add('h
 
 let calcExpression = "";
 window.pressCalcKey = function(key) {
+    if (isExamEnded) return; // Freeze calculator actions after time ends
     const disp = document.getElementById('calcDisplay');
     if (key === 'C') {
         calcExpression = ""; disp.value = "0";
@@ -696,5 +638,5 @@ window.pressCalcKey = function(key) {
 document.getElementById('restartBtn').onclick = () => {
     resultScreen.classList.add('hidden'); configScreen.classList.remove('hidden');
     fileUploader.value = ''; startExamBtn.setAttribute('disabled', false);
-    syncCloudRepositoryBankList();
+    isExamEnded = false;
 };
