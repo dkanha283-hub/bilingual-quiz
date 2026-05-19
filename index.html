@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilingual Quiz Master</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h2>🛠️ Configurations</h2>
+            
+            <div class="config-group">
+                <label for="timerInput">Timer per Question (seconds):</label>
+                <input type="number" id="timerInput" min="10" max="300" value="60">
+            </div>
+
+            <div class="config-group">
+                <label>Test Language / परीक्षा की भाषा:</label>
+                <div class="radio-vertical">
+                    <label><input type="radio" name="langPref" value="en" checked> English Only</label>
+                    <label><input type="radio" name="langPref" value="hi"> Hindi Only (हिंदी)</label>
+                    <label><input type="radio" name="langPref" value="both"> Bilingual (Both Side-by-Side)</label>
+                </div>
+            </div>
+
+            <div class="config-group">
+                <label>Question Order:</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="orderType" value="sequential" checked> Sequential</label>
+                    <label><input type="radio" name="orderType" value="shuffled"> Shuffled</label>
+                </div>
+            </div>
+
+            <div class="config-group">
+                <label for="fileUploader">Upload Questions (JSON):</label>
+                <input type="file" id="fileUploader" accept=".json">
+            </div>
+
+            <button id="clearBtn" class="btn btn-danger">🗑️ Clear / Reset Data</button>
+        </aside>
+
+        <main class="quiz-area">
+            <div id="uploadPrompt" class="info-box">
+                👈 Please upload your <code>percentage_sheet_questions.json</code> file in the sidebar to get started.
+            </div>
+
+            <div id="quizContainer" class="hidden">
+                <div class="quiz-header">
+                    <div class="progress-info">
+                        <span id="questionNum">Question 1 of 0</span>
+                        <span id="examTarget" class="badge"></span>
+                    </div>
+                    <div class="timer-wrapper">
+                        <span id="timerText" class="running-timer">60s</span>
+                        <div class="timer-bg-bar">
+                            <div id="timerBar" class="timer-bar"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="questionDisplayContainer"></div>
+
+                <hr>
+
+                <div id="optionsContainer" class="options-grid"></div>
+
+                <div class="quiz-footer">
+                    <button id="submitBtn" class="btn btn-success">Submit Answer & Next ➡️</button>
+                </div>
+            </div>
+
+            <div id="resultContainer" class="hidden text-center">
+                <h2>🎉 Quiz Completed!</h2>
+                <div class="score-metric">
+                    <span id="finalScore">0</span> / <span id="totalQuestions">0</span>
+                </div>
+                <p id="accuracyText">Accuracy Rate: 0%</p>
+                <button id="restartBtn" class="btn btn-primary">Restart Quiz</button>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
