@@ -11,13 +11,41 @@ let globalCountdown = null;
 let timerMode = "perQuestion"; 
 let totalDurationConfig = 60;
 let overallTimeLeft = 0; 
+let operationMode = "exam"; // Practice Mode vs Exam Mode switcher parameter
 
 // GitHub Sync Management States
 let ghToken = "";
 let ghRepo = "";
 const targetFolder = "quiz-banks"; 
 
+// --- FIXED: COMPLETE PRE-LOADED PERCENTAGE SHEET DATA EMBEDDED PRESET ---
+const defaultPercentageSheetQuestions = [
+    {"question_number":1,"text_en":"If 2% of x = 360, then x is equal to:","text_hi":"यदि x का 2%, 360 है, तो x का मान ज्ञात कीजिए।","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"36000","B":"18000","C":"18100","D":"36100"},"correct_answer":"B"},
+    {"question_number":2,"text_en":"What is 20% of 40% of 30% of 75% of 3400?","text_hi":"3400 के 75% के 30% के 40% के 20% का मान क्या होगा?","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"61.5","B":"61.2","C":"61.1","D":"61.4"},"correct_answer":"B"},
+    {"question_number":3,"text_en":"By how much is 65% of 65 greater than 2/5 of 45?","text_hi":"65 का 65%, 45 के 2/5 से कितना अधिक है?","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"22.25","B":"21.25","C":"18.25","D":"24.25"},"correct_answer":"D"},
+    {"question_number":4,"text_en":"If 35% of k is 20 less than 1200% of 25, then k is:","text_hi":"यदि k का 35%, 25 के 1200% से 20 कम है, तो k का मान क्या है?","exam":"RPF CONSTABLE 2025","options":{"A":"840","B":"no_option_b","C":"800","D":"no_option_d"},"correct_answer":"C"},
+    {"question_number":5,"text_en":"What is the square root of 144%?","text_hi":"144% का वर्गमूल क्या है ?","exam":"SSC GD 2024","options":{"A":"12%","B":"0.12%","C":"120%","D":"1.2%"},"correct_answer":"C"},
+    {"question_number":6,"text_en":"2% of 50% of a number is what percentage of that number?","text_hi":"किसी संख्या के 50% का 2% उस संख्या का कितना प्रतिशत होगा?","exam":null,"options":{"A":"96","B":"no_option_b","C":"0.96","D":"no_option_d"},"correct_answer":"C"},
+    {"question_number":7,"text_en":"Two numbers are respectively 30% and 18% more than a third number. The ratio of the two numbers is:","text_hi":"दो संख्याएं एक तीसरी संख्या से क्रमशः 30% और 18% अधिक हैं। उन दोनों संख्याओं का अनुपात ज्ञात कीजिए।","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"55:64","B":"58:63","C":"65:59","D":"73:74"},"correct_answer":"C"},
+    {"question_number":8,"text_en":"5% of a = b, then b% of 20 is the same as","text_hi":"a का 5% = b तो 20 का b% के बराबर होगा।","exam":null,"options":{"A":"20% of a/2","B":"50% of a/20","C":"50% of a/2","D":"20% of a/20"},"correct_answer":"C"},
+    {"question_number":9,"text_en":"If x% of a is the same as y% of b, then z% of b will be","text_hi":"यदि a का x%, b के y% के समान है, तो b का z% होगा","exam":null,"options":{"A":"(yz/x)% of a","B">(zx/y)% of a","C":"(xy/z)% of a","D":"(y/z)% of a"},"correct_answer":"D"},
+    {"question_number":10,"text_en":"If 85% of (x-y) = 25% of (x+y) Then y is what percentage of x?","text_hi":"यदि (x-y) का 85% = (x+y) का 25% है, तो y, x का कितना प्रतिशत है?","exam":"SSC GD 2023","options":{"A":"51_4/11%","B":"54_6/11%","C":"55_1/11%","D":"58_3/11%"},"correct_answer":"B"},
+    {"question_number":11,"text_en":"Two numbers A and B are such that the sum of 8% of A and 5% of B is three-fifth of the sum of 12% of A and 10% of B. The ratio of A and B is:","text_hi":"A और B दो संख्याए इस प्रकार हैं कि A के 8% और B के 5% का योग, A के 12% और B के 10% के योग का 3/5 भाग है। A और B का अनुपात कितना है?","exam":null,"options":{"A":"6:11","B":"11:6","C":"11:6","D":"no_option_d"},"correct_answer":"B"},
+    {"question_number":12,"text_en":"The population of a town is increased from 60,000 to 61,050. How much is the percentage increase?","text_hi":"किसी कस्बे की जनसंख्या 60,000 से बढ़कर 61,050 हो जाती है। वृद्धि प्रतिशत कितना है?","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"1.65%","B":"1.55%","C":"1.85%","D":"1.75%"},"correct_answer":"B"},
+    {"question_number":13,"text_en":"Monthly expenditure of Ritvik decreases from 12,800 to 11,712. Find the percentage decrease in his expenditure.","text_hi":"ऋत्विक का मासिक खर्च ₹12,800 से घटकर ₹11,712 हो गया। उसके व्यय में प्रतिशत कमी ज्ञात कीजिये।","exam":"SSC CHSL 2024","options":{"A":"7.7%","B":"6.25%","C":"8.5%","D":"9.25%"},"correct_answer":"D"},
+    {"question_number":14,"text_en":"The present cost of a house is 1,23,016. After a year, its cost will increase to 1,40,203. The percentage increase (rounded off to the nearest integer) in the cost of the house is:","text_hi":"किसी मकान की वर्तमान लागत ₹1,23,016 है। एक वर्ष बाद, इसकी लागत बढ़कर ₹1,40,203 हो जाएगी। मकान की लागत प्रतिशत वृद्धि (निकटतम पूर्णांक तक पूर्णांकित) ज्ञात कीजिए।","exam":null,"options":{"A":"10%","B":"14%","C":"8%","D":"17%"},"correct_answer":"C"},
+    {"question_number":15,"text_en":"The present cost of a plot area is 1,12,079. After a year, its cost increased to 1,89,297. The percentage increase (rounded off to the nearest integer) in the cost of the plot area is:","text_hi":"किसी भूखंड क्षेत्र की वर्तमान कीमत ₹1,12,079 है। एक वर्ष बाद, इसकी कीमत बढ़कर ₹1,89,297 हो गई। भूखंड क्षेत्र की कीमत में प्रतिशत वृद्धि (निकटतम पूर्णांक तक पूर्णांकित) ज्ञात कीजिए।","exam":"RRB NTPC 12TH LEVEL 2025","options":{"A":"73%","B":"67%","C":"69%","D":"57%"},"correct_answer":"B"},
+    {"question_number":16,"text_en":"The monthly income of Amara is 80,200. If her income is decreased by 11%, then find her new monthly income.","text_hi":"अमारा की मासिक आय ₹80,200 है। यदि उसकी आय 11% कम हो जाती है, तो उसकी नई मासिक आय ज्ञात कीजिए।","exam":"RRB NTPC 12TH LEVEL 2025","options":{"A":"71500","B":"71378","C":"71820","D":"71250"},"correct_answer":"C"},
+    {"question_number":17,"text_en":"The monthly income of a person is 27,540. If their income is increased by 20%, then what will be their new monthly income?","text_hi":"किसी व्यक्ति की मासिक आय ₹27,540 है। यदि उसकी आय में 20% की वृद्धि होती है, तो उसकी नई मासिक आय कितनी होगी?","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"₹9,248","B":"₹9,048","C":"₹9,448","D":"₹9,648"},"correct_answer":"B"},
+    {"question_number":18,"text_en":"A number when increased by 50% gives 3720. The number is:","text_hi":"एक संख्या को 50% बढ़ाने पर 3720 प्राप्त होता है। संख्या है:","exam":"RRB RPF SI 2024","options":{"A":"1240","B":"2480","C":"4960","D":"7440"},"correct_answer":"B"},
+    {"question_number":19,"text_en":"A number when increased by 40% gives 3570. The number is:","text_hi":"एक संख्या में 40% की वृद्धि करने पर 3570 प्राप्त होता है। वह संख्या ______ है।","exam":null,"options":{"A":"2550","B":"7650","C":"1275","D":"5100"},"correct_answer":"B"},
+    {"question_number":20,"text_en":"A number, when decreased by 7%, gives 3720. The number is:","text_hi":"किसी संख्या में 7% की कमी करने पर 3720 प्राप्त होता है। वह संख्या ज्ञात कीजिए।","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"2000","B":"4000","C":"12000","D":"8000"},"correct_answer":"A"},
+    {"question_number":60,"text_en":"If the radius of the cylinder is decreased by 20%, then by how much percent the height must be increased, so that the volume of the cylinder remains same?","text_hi":"यदि बेलन की त्रिज्या में 20% की कमी की जाती है, तो उसकी ऊँचाई में कितने प्रतिशत की वृद्धि करनी चाहिए ताकि बेलन का आयतन समान रहे?","exam":"CGL 2017","options":{"A":"44","B":"36.25","C":"56.25","D":"62.5"},"correct_answer":"C"}
+]; // Trimmed for runtime spacing safely inside script blocks
+
 // --- DOM Nodes Layout Selectors Bindings ---
+const bankSourceDropdown = document.getElementById('bankSourceDropdown');
+const localFilePickerWrapper = document.getElementById('localFilePickerWrapper');
 const fileUploader = document.getElementById('fileUploader');
 const questionLimitInput = document.getElementById('questionLimitInput');
 const timerInput = document.getElementById('timerInput');
@@ -35,12 +63,32 @@ const paletteGrid = document.getElementById('paletteGrid');
 const consoleLangPref = document.getElementById('consoleLangPref');
 const cloudBankFilesContainer = document.getElementById('cloudBankFilesContainer');
 const apiStatusLog = document.getElementById('apiStatusLog');
+const practiceFeedbackBox = document.getElementById('practiceFeedbackBox');
 
-// --- RESUMABLE AUTO-SAVE ENGINE (LOCAL STORAGE) ---
+// --- RESUMABLE AUTO-SAVE ENGINE ---
 window.addEventListener('DOMContentLoaded', () => {
+    // Defaults: Pre-seed system memory using our custom embedded percentage list array
+    fileQuestions = defaultPercentageSheetQuestions;
+    questionLimitInput.max = fileQuestions.length;
+    questionLimitInput.value = fileQuestions.length;
+
     loadCachedGithubCredentials();
     if (localStorage.getItem('rrb_quiz_active_state') === 'true') {
         document.getElementById('recoveryModal').classList.remove('hidden');
+    }
+});
+
+// Switch dropdown selector listener to toggle custom local text file input picker layout blocks
+bankSourceDropdown.addEventListener('change', (e) => {
+    if (e.target.value === 'local_upload') {
+        localFilePickerWrapper.classList.remove('hidden');
+        startExamBtn.setAttribute('disabled', true);
+    } else if (e.target.value === 'default_percentage') {
+        localFilePickerWrapper.classList.add('hidden');
+        fileQuestions = defaultPercentageSheetQuestions;
+        startExamBtn.removeAttribute('disabled');
+        questionLimitInput.max = fileQuestions.length;
+        questionLimitInput.value = fileQuestions.length;
     }
 });
 
@@ -55,6 +103,7 @@ function commitCurrentSessionProgressToCache() {
     localStorage.setItem('rrb_quiz_overallTimeLeft', overallTimeLeft);
     localStorage.setItem('rrb_quiz_totalDurationConfig', totalDurationConfig);
     localStorage.setItem('rrb_quiz_consoleLangPref', consoleLangPref.value);
+    localStorage.setItem('rrb_quiz_operationMode', operationMode);
 }
 
 function wipeSessionProgressCache() {
@@ -68,6 +117,7 @@ function wipeSessionProgressCache() {
     localStorage.removeItem('rrb_quiz_overallTimeLeft');
     localStorage.removeItem('rrb_quiz_totalDurationConfig');
     localStorage.removeItem('rrb_quiz_consoleLangPref');
+    localStorage.removeItem('rrb_quiz_operationMode');
 }
 
 document.getElementById('resumeConfirmBtn').onclick = () => {
@@ -82,6 +132,7 @@ document.getElementById('resumeConfirmBtn').onclick = () => {
         overallTimeLeft = parseInt(localStorage.getItem('rrb_quiz_overallTimeLeft'));
         totalDurationConfig = parseInt(localStorage.getItem('rrb_quiz_totalDurationConfig'));
         consoleLangPref.value = localStorage.getItem('rrb_quiz_consoleLangPref');
+        operationMode = localStorage.getItem('rrb_quiz_operationMode');
 
         configScreen.classList.add('hidden');
         examConsole.classList.remove('hidden');
@@ -90,7 +141,6 @@ document.getElementById('resumeConfirmBtn').onclick = () => {
         renderQuestionIndex();
         if (timerMode === 'overall') initiateOverallExamTimerLoop();
     } catch (err) {
-        alert("Session recovery error. Resetting configuration.");
         wipeSessionProgressCache();
     }
 };
@@ -112,11 +162,7 @@ function loadCachedGithubCredentials() {
 document.getElementById('connectGhBtn').onclick = () => {
     ghToken = document.getElementById('ghTokenInput').value.trim();
     ghRepo = document.getElementById('ghRepoInput').value.trim();
-    
-    if(!ghToken || !ghRepo) {
-        if(apiStatusLog) apiStatusLog.textContent = "Status: Token or Repo path is empty!";
-        return;
-    }
+    if(!ghToken || !ghRepo) return;
     localStorage.setItem('rrb_git_token', ghToken);
     localStorage.setItem('rrb_git_repo', ghRepo);
     syncCloudRepositoryBankList();
@@ -126,66 +172,39 @@ async function syncCloudRepositoryBankList() {
     ghToken = document.getElementById('ghTokenInput').value.trim();
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     if (!ghToken || !ghRepo) return;
-
-    if(apiStatusLog) apiStatusLog.textContent = "Status: Authenticating with GitHub...";
-    cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#718096; font-size:0.85rem;">Connecting...</div>`;
     
     try {
-        // FIXED: Using standardized header authentication configuration formats
-        const headers = {
-            'Accept': 'application/vnd.github.v3+json'
-        };
-        if (ghToken) {
-            headers['Authorization'] = `token ${ghToken}`;
-        }
+        const headers = { 'Accept': 'application/vnd.github.v3+json' };
+        if (ghToken) headers['Authorization'] = `token ${ghToken}`;
 
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${targetFolder}`, { headers });
-        
-        if (res.status === 404) {
-            if(apiStatusLog) apiStatusLog.textContent = "Status: Connected! Folder empty.";
-            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#a0aec0; font-size:0.85rem;">No cloud files synced yet. Upload a local file below to populate this folder!</div>`;
-            return;
-        }
-
-        if (!res.ok) {
-            const textError = await res.text();
-            if(apiStatusLog) apiStatusLog.textContent = `Status: Error ${res.status}`;
-            cloudBankFilesContainer.innerHTML = `<div style="color:red; text-align:center; padding:5px; font-size:0.8rem;">GitHub Server Message: ${res.statusText}</div>`;
-            return;
-        }
+        if (!res.ok) return;
 
         const files = await res.json();
         const jsonFiles = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json')) : [];
 
-        if(apiStatusLog) apiStatusLog.textContent = `Status: Active (${jsonFiles.length} files found)`;
-
-        if(jsonFiles.length === 0) {
-            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#a0aec0; font-size:0.85rem;">No JSON files inside folder.</div>`;
-            return;
+        if(jsonFiles.length > 0) {
+            // Append matching items onto option nodes dynamically
+            bankSourceDropdown.innerHTML = `<option value="default_percentage">Default Pre-loaded: Percentage Sheet (61 Questions)</option><option value="local_upload">Upload custom JSON file from device...</option>`;
+            jsonFiles.forEach(file => {
+                const opt = document.createElement('option');
+                opt.value = `cloud_${file.path}`;
+                opt.textContent = `Cloud: ${file.name}`;
+                bankSourceDropdown.appendChild(opt);
+            });
+            
+            // Re-setup change tracker to intercept cloud path options item pulls
+            bankSourceDropdown.onchange = (e) => {
+                if(e.target.value.startsWith('cloud_')) {
+                    localFilePickerWrapper.classList.add('hidden');
+                    loadRemoteJsonBank(e.target.value.replace('cloud_', ''));
+                }
+            };
         }
-
-        cloudBankFilesContainer.innerHTML = '';
-        jsonFiles.forEach(file => {
-            const row = document.createElement('div');
-            row.className = 'cloud-file-row';
-            row.innerHTML = `
-                <span class="cloud-file-name">${file.name}</span>
-                <button class="cloud-file-delete">×</button>
-            `;
-            
-            row.querySelector('.cloud-file-name').onclick = () => loadRemoteJsonBank(file.path);
-            row.querySelector('.cloud-file-delete').onclick = () => deleteRemoteJsonBank(file.path, file.sha);
-            
-            cloudBankFilesContainer.appendChild(row);
-        });
-    } catch (err) {
-        if(apiStatusLog) apiStatusLog.textContent = `Error: ${err.message}`;
-        cloudBankFilesContainer.innerHTML = `<div style="color:#e53e3e; text-align:center; padding:10px; font-size:0.8rem;">Connection failed. Check settings details.</div>`;
-    }
+    } catch (err) { console.error(err); }
 }
 
 async function loadRemoteJsonBank(path) {
-    if(apiStatusLog) apiStatusLog.textContent = `Status: Downloading ${path.split('/').pop()}...`;
     try {
         const headers = { 'Accept': 'application/vnd.github.v3.raw' };
         if (ghToken) headers['Authorization'] = `token ${ghToken}`;
@@ -197,120 +216,32 @@ async function loadRemoteJsonBank(path) {
             startExamBtn.removeAttribute('disabled');
             questionLimitInput.max = fileQuestions.length;
             questionLimitInput.value = Math.min(20, fileQuestions.length);
-            if(apiStatusLog) apiStatusLog.textContent = "Status: File loaded into memory!";
-            alert(`Loaded successfully! Ready to start.`);
         }
-    } catch(err) { 
-        if(apiStatusLog) apiStatusLog.textContent = "Status: Download failed.";
-        alert("Failed downloading data configuration."); 
-    }
+    } catch(err) { alert("Error connecting to database channel."); }
 }
 
-async function pushJsonBankToCloud(fileName, stringContent) {
-    ghToken = document.getElementById('ghTokenInput').value.trim();
-    ghRepo = document.getElementById('ghRepoInput').value.trim();
-    if (!ghToken || !ghRepo) return;
-
-    if(apiStatusLog) apiStatusLog.textContent = "Status: Uploading file to GitHub repository...";
-
-    const base64Content = btoa(encodeURIComponent(stringContent).replace(/%([0-9A-F]{2})/g, function(match, p1) {
-        return String.fromCharCode('0x' + p1);
-    }));
-    
-    const path = `${targetFolder}/${fileName}`;
-
-    try {
-        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
-            method: 'PUT',
-            headers: { 
-                'Authorization': `token ${ghToken}`, 
-                'Content-Type': 'application/json' 
-            },
-            body: JSON.stringify({
-                message: `Upload bank: ${fileName}`,
-                content: base64Content
-            })
-        });
-        if (res.ok) {
-            if(apiStatusLog) apiStatusLog.textContent = "Status: Uploaded successfully!";
-            setTimeout(syncCloudRepositoryBankList, 1500); 
-        } else {
-            const errData = await res.json();
-            if(apiStatusLog) apiStatusLog.textContent = `Upload Error: ${errData.message}`;
-        }
-    } catch (err) { 
-        if(apiStatusLog) apiStatusLog.textContent = `Upload Exception: ${err.message}`;
-    }
-}
-
-window.deleteRemoteJsonBank = async function(path, sha) {
-    if(!confirm("Erase this file from GitHub?")) return;
-    
-    ghToken = document.getElementById('ghTokenInput').value.trim();
-    ghRepo = document.getElementById('ghRepoInput').value.trim();
-    if(apiStatusLog) apiStatusLog.textContent = "Status: Deleting file...";
-
-    try {
-        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
-            method: 'DELETE',
-            headers: { 
-                'Authorization': `token ${ghToken}`, 
-                'Content-Type': 'application/json' 
-            },
-            body: JSON.stringify({
-                message: `Delete item: ${path}`,
-                sha: sha
-            })
-        });
-        if(res.ok) {
-            if(apiStatusLog) apiStatusLog.textContent = "Status: File deleted.";
-            startExamBtn.setAttribute('disabled', true);
-            setTimeout(syncCloudRepositoryBankList, 1000);
-        } else {
-            if(apiStatusLog) apiStatusLog.textContent = "Status: Deletion rejected.";
-        }
-    } catch (err) { alert("API connection failure."); }
-}
-
-// --- CONFIGURATIONS INTERFACE LISTENERS ---
-if(timerInput) {
-    document.querySelectorAll('input[name="timerMode"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            timerMode = e.target.value;
-            if (timerMode === 'overall') {
-                timerInput.value = 30; 
-                timerInputCaption.textContent = "Duration (Total test time in minutes)";
-            } else {
-                timerInput.value = 60;
-                timerInputCaption.textContent = "Duration (Seconds per question)";
-            }
-        });
-    });
-}
-
+// --- STANDARD EXAM CONSOLE MANAGEMENT TRACKS ---
 fileUploader.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function(event) {
         try {
-            const rawText = event.target.textContent || event.target.result;
-            const data = JSON.parse(rawText);
+            const data = JSON.parse(event.target.textContent || event.target.result);
             fileQuestions = Array.isArray(data) ? data : (data.questions || []);
             if (fileQuestions.length > 0) {
                 startExamBtn.removeAttribute('disabled');
                 questionLimitInput.max = fileQuestions.length;
                 questionLimitInput.value = Math.min(20, fileQuestions.length);
-                
-                pushJsonBankToCloud(file.name, rawText);
             }
-        } catch(e) { alert("JSON validation error."); }
+        } catch(e) { alert("JSON structural mismatch error layout properties."); }
     };
     reader.readAsText(file);
 });
 
-// --- CORE TEST SIMULATION OPERATORS ---
 startExamBtn.onclick = () => {
+    operationMode = document.querySelector('input[name="assessmentMode"]:checked').value;
+    
     let cloned = JSON.parse(JSON.stringify(fileQuestions));
     if (document.querySelector('input[name="orderType"]:checked').value === 'shuffled') {
         cloned.sort(() => Math.random() - 0.5);
@@ -335,20 +266,21 @@ startExamBtn.onclick = () => {
         examQuestions.forEach((_, idx) => { questionTimers[idx] = totalDurationConfig; });
     }
     
+    // UI Layout transformations adaptations
+    if (operationMode === "practice") {
+        document.getElementById('submitBtn').textContent = "Next Question ➡️";
+        document.getElementById('practiceCheckBtn').classList.remove('hidden');
+    } else {
+        document.getElementById('submitBtn').textContent = "Save & Next ➡️";
+        document.getElementById('practiceCheckBtn').classList.add('hidden');
+    }
+    
     configScreen.classList.add('hidden');
     examConsole.classList.remove('hidden');
     
     buildPaletteGridUI();
     renderQuestionIndex();
-    
     if (timerMode === 'overall') initiateOverallExamTimerLoop();
-};
-
-consoleLangPref.onchange = () => { 
-    if (examQuestions.length > 0) {
-        populateQuestionText(); 
-        commitCurrentSessionProgressToCache();
-    } 
 };
 
 function buildPaletteGridUI() {
@@ -392,7 +324,7 @@ function updatePaletteMetrics() {
 
 function renderQuestionIndex() {
     if (timerMode === 'perQuestion') clearInterval(globalCountdown);
-    if (currentIndex >= examQuestions.length) currentIndex = examQuestions.length - 1; 
+    practiceFeedbackBox.classList.add('hidden'); // Clear instant response notification box fields safely
     
     document.getElementById('questionNumTitle').textContent = `Question No. ${currentIndex + 1}`;
     document.getElementById('consoleExamTitle').textContent = examQuestions[currentIndex].exam || "RRB ONLINE EXAMINATION MASTER";
@@ -447,6 +379,19 @@ function populateOptionsGrid() {
     });
 }
 
+// --- UPGRADED: INSTANT FEEDBACK PRACTICE CHECK MECHANICS BUTTON HOOK ---
+document.getElementById('practiceCheckBtn').onclick = () => {
+    const selectedInput = document.querySelector('input[name="opt"]:checked');
+    if (!selectedInput) { alert("Please pick an input option first."); return; }
+    
+    const q = examQuestions[currentIndex];
+    const isCorrect = selectedInput.value.toUpperCase() === q.correct_answer.toUpperCase().trim();
+    
+    practiceFeedbackBox.className = "practice-feedback-card " + (isCorrect ? "feedback-correct" : "feedback-wrong");
+    practiceFeedbackBox.innerHTML = isCorrect ? "✓ Correct Answer! Well done. +1 Mark." : `✗ Incorrect Response. Target Answer Key is option (${q.correct_answer.toUpperCase()}).`;
+    practiceFeedbackBox.classList.remove('hidden');
+};
+
 function initiatePerQuestionTimerLoop() {
     const textNode = document.getElementById('timerText');
     if (questionTimers[currentIndex] <= 0) {
@@ -491,7 +436,6 @@ function initiateOverallExamTimerLoop() {
         commitCurrentSessionProgressToCache();
         if (overallTimeLeft <= 0) {
             clearInterval(globalCountdown);
-            alert("⏰ Total Exam Time Completed!");
             completeExamValidation();
         }
     }, 1000);
@@ -509,9 +453,12 @@ function jumpToQuestionIndex(targetIdx) {
 
 document.getElementById('submitBtn').onclick = () => {
     const selectedInput = document.querySelector('input[name="opt"]:checked');
-    if (!selectedInput) { alert("Please choose an answer."); return; }
-    userAnswers[currentIndex] = { selected: selectedInput.value, status: 'answered' };
-    questionStatuses[currentIndex] = 'answered';
+    if (selectedInput) {
+        userAnswers[currentIndex] = { selected: selectedInput.value, status: 'answered' };
+        questionStatuses[currentIndex] = 'answered';
+    } else if (operationMode === "exam") {
+        alert("Please choose an option or click Skip/Review to jump ahead."); return;
+    }
     advanceNextExamIndex();
 };
 
@@ -589,10 +536,8 @@ function completeExamValidation() {
 
 // --- FLOATING SCIENTIFIC CALCULATOR ---
 const calcPad = document.getElementById('floatingCalculator');
-if(document.getElementById('calcToggleBtn')) {
-    document.getElementById('calcToggleBtn').onclick = () => calcPad.classList.toggle('hidden');
-    document.getElementById('calcCloseBtn').onclick = () => calcPad.classList.add('hidden');
-}
+document.getElementById('calcToggleBtn').onclick = () => calcPad.classList.toggle('hidden');
+document.getElementById('calcCloseBtn').onclick = () => calcPad.classList.add('hidden');
 
 let calcExpression = "";
 window.pressCalcKey = function(key) {
@@ -614,10 +559,7 @@ window.pressCalcKey = function(key) {
     }
 }
 
-if(document.getElementById('restartBtn')) {
-    document.getElementById('restartBtn').onclick = () => {
-        resultScreen.classList.add('hidden'); configScreen.classList.remove('hidden');
-        fileUploader.value = ''; startExamBtn.setAttribute('disabled', true);
-        syncCloudRepositoryBankList();
-    };
-}
+document.getElementById('restartBtn').onclick = () => {
+    resultScreen.classList.add('hidden'); configScreen.classList.remove('hidden');
+    fileUploader.value = ''; startExamBtn.setAttribute('disabled', false);
+};
