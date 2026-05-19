@@ -3,16 +3,21 @@ let fileQuestions = [];
 let examQuestions = [];
 let currentIndex = 0;
 
-let userAnswers = {}; // Mapping schema: { index: { selected: 'A', status: 'answered'|'review'|'timeout'|'skipped' } }
-let questionStatuses = []; // Array statuses: 'notvisited', 'notanswered', 'answered', 'review'
-let questionTimers = {}; // NEW: Tracks remaining time per individual question index { 0: 45, 1: 60, ... }
+let userAnswers = {}; 
+let questionStatuses = []; 
+let questionTimers = {}; 
 
 let globalCountdown = null;
-let timerMode = "perQuestion"; // 'perQuestion' or 'overall'
+let timerMode = "perQuestion"; 
 let totalDurationConfig = 60;
-let overallTimeLeft = 0; // Global clock tracker for the total exam mode
+let overallTimeLeft = 0; 
 
-// --- Bindings Selectors ---
+// GitHub Sync Management States
+let ghToken = "";
+let ghRepo = "";
+const targetFolder = "quiz-banks"; // Repository directory path folder where configurations live
+
+// --- DOM Nodes Layout Selectors Bindings ---
 const fileUploader = document.getElementById('fileUploader');
 const questionLimitInput = document.getElementById('questionLimitInput');
 const timerInput = document.getElementById('timerInput');
@@ -28,13 +33,205 @@ const questionDisplayContainer = document.getElementById('questionDisplayContain
 const optionsContainer = document.getElementById('optionsContainer');
 const paletteGrid = document.getElementById('paletteGrid');
 const consoleLangPref = document.getElementById('consoleLangPref');
+const cloudBankFilesContainer = document.getElementById('cloudBankFilesContainer');
 
-// Listen for dynamic timer label switch adjustments inside the setup console card
+// --- RESUMABLE AUTO-SAVE ENGINE (LOCAL STORAGE) ---
+
+// Automatically verifies layout persistence checkpoints on startup lifecycle
+window.addEventListener('DOMContentLoaded', () => {
+    loadCachedGithubCredentials();
+    if (localStorage.getItem('rrb_quiz_active_state') === 'true') {
+        document.getElementById('recoveryModal').classList.remove('hidden');
+    }
+});
+
+function commitCurrentSessionProgressToCache() {
+    localStorage.setItem('rrb_quiz_active_state', 'true');
+    localStorage.setItem('rrb_quiz_examQuestions', JSON.stringify(examQuestions));
+    localStorage.setItem('rrb_quiz_currentIndex', currentIndex);
+    localStorage.setItem('rrb_quiz_userAnswers', JSON.stringify(userAnswers));
+    localStorage.setItem('rrb_quiz_questionStatuses', JSON.stringify(questionStatuses));
+    localStorage.setItem('rrb_quiz_questionTimers', JSON.stringify(questionTimers));
+    localStorage.setItem('rrb_quiz_timerMode', timerMode);
+    localStorage.setItem('rrb_quiz_overallTimeLeft', overallTimeLeft);
+    localStorage.setItem('rrb_quiz_totalDurationConfig', totalDurationConfig);
+    localStorage.setItem('rrb_quiz_consoleLangPref', consoleLangPref.value);
+}
+
+function wipeSessionProgressCache() {
+    localStorage.removeItem('rrb_quiz_active_state');
+    localStorage.removeItem('rrb_quiz_examQuestions');
+    localStorage.removeItem('rrb_quiz_currentIndex');
+    localStorage.removeItem('rrb_quiz_userAnswers');
+    localStorage.removeItem('rrb_quiz_questionStatuses');
+    localStorage.removeItem('rrb_quiz_questionTimers');
+    localStorage.removeItem('rrb_quiz_timerMode');
+    localStorage.removeItem('rrb_quiz_overallTimeLeft');
+    localStorage.removeItem('rrb_quiz_totalDurationConfig');
+    localStorage.removeItem('rrb_quiz_consoleLangPref');
+}
+
+// Interrupted state listeners modals confirmations
+document.getElementById('resumeConfirmBtn').onclick = () => {
+    document.getElementById('recoveryModal').classList.add('hidden');
+    try {
+        examQuestions = JSON.parse(localStorage.getItem('rrb_quiz_examQuestions'));
+        currentIndex = parseInt(localStorage.getItem('rrb_quiz_currentIndex'));
+        userAnswers = JSON.parse(localStorage.getItem('rrb_quiz_userAnswers'));
+        questionStatuses = JSON.parse(localStorage.getItem('rrb_quiz_questionStatuses'));
+        questionTimers = JSON.parse(localStorage.getItem('rrb_quiz_questionTimers'));
+        timerMode = localStorage.getItem('rrb_quiz_timerMode');
+        overallTimeLeft = parseInt(localStorage.getItem('rrb_quiz_overallTimeLeft'));
+        totalDurationConfig = parseInt(localStorage.getItem('rrb_quiz_totalDurationConfig'));
+        consoleLangPref.value = localStorage.getItem('rrb_quiz_consoleLangPref');
+
+        configScreen.classList.add('hidden');
+        examConsole.classList.remove('hidden');
+        
+        buildPaletteGridUI();
+        renderQuestionIndex();
+        if (timerMode === 'overall') initiateOverallExamTimerLoop();
+    } catch (err) {
+        alert("Session recovery error. Resetting configuration.");
+        wipeSessionProgressCache();
+    }
+};
+
+document.getElementById('resumeRejectBtn').onclick = () => {
+    document.getElementById('recoveryModal').classList.add('hidden');
+    wipeSessionProgressCache();
+};
+
+// --- DYNAMIC GITHUB API SYNCHRONIZATION ENGINE ---
+
+function loadCachedGithubCredentials() {
+    if(localStorage.getItem('rrb_git_token')) {
+        document.getElementById('ghTokenInput').value = localStorage.getItem('rrb_git_token');
+        document.getElementById('ghRepoInput').value = localStorage.getItem('rrb_git_repo');
+        syncCloudRepositoryBankList();
+    }
+}
+
+document.getElementById('connectGhBtn').onclick = () => {
+    ghToken = document.getElementById('ghTokenInput').value.trim();
+    ghRepo = document.getElementById('ghRepoInput').value.trim();
+    
+    if(!ghToken || !ghRepo) {
+        alert("Please map accurate Token and Repository string paths securely.");
+        return;
+    }
+    localStorage.setItem('rrb_git_token', ghToken);
+    localStorage.setItem('rrb_git_repo', ghRepo);
+    syncCloudRepositoryBankList();
+};
+
+async function syncCloudRepositoryBankList() {
+    ghToken = document.getElementById('ghTokenInput').value.trim();
+    ghRepo = document.getElementById('ghRepoInput').value.trim();
+    if (!ghToken || !ghRepo) return;
+
+    cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#718096; font-size:0.85rem;">Fetching remote tree layers...</div>`;
+    
+    try {
+        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${targetFolder}`, {
+            headers: { 'Authorization': `token ${ghToken}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        
+        if (res.status === 404) {
+            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#a0aec0; font-size:0.85rem;">Folder empty. Sync files by drag-and-drop.</div>`;
+            return;
+        }
+
+        const files = await res.json();
+        const jsonFiles = files.filter(f => f.name.endsWith('.json'));
+
+        if(jsonFiles.length === 0) {
+            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#a0aec0; font-size:0.85rem;">No JSON banks discovered inside repository.</div>`;
+            return;
+        }
+
+        cloudBankFilesContainer.innerHTML = '';
+        jsonFiles.forEach(file => {
+            const row = document.createElement('div');
+            row.className = 'cloud-file-row';
+            row.innerHTML = `
+                <span class="cloud-file-name" onclick="loadRemoteJsonBank('${file.path}')">${file.name}</span>
+                <button class="cloud-file-delete" onclick="deleteRemoteJsonBank('${file.path}', '${file.sha}')">×</button>
+            `;
+            cloudBankFilesContainer.appendChild(row);
+        });
+    } catch (err) {
+        cloudBankFilesContainer.innerHTML = `<div style="color:red; font-size:0.8rem; padding:10px;">Connection failed API: ${err}</div>`;
+    }
+}
+
+async function loadRemoteJsonBank(path) {
+    try {
+        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
+            headers: { 'Authorization': `token ${ghToken}`, 'Accept': 'application/vnd.github.v3.raw' }
+        });
+        const data = await res.json();
+        fileQuestions = Array.isArray(data) ? data : (data.questions || []);
+        if (fileQuestions.length > 0) {
+            startExamBtn.removeAttribute('disabled');
+            questionLimitInput.max = fileQuestions.length;
+            questionLimitInput.value = Math.min(20, fileQuestions.length);
+            alert(`Loaded: ${path.split('/').pop()} successfully! Click Start Exam below.`);
+        }
+    } catch(err) { alert("Failed pulling target resource stream data configurations."); }
+}
+
+async function pushJsonBankToCloud(fileName, stringContent) {
+    ghToken = document.getElementById('ghTokenInput').value.trim();
+    ghRepo = document.getElementById('ghRepoInput').value.trim();
+    if (!ghToken || !ghRepo) return;
+
+    const base64Content = btoa(unescape(encodeURIComponent(stringContent)));
+    const path = `${targetFolder}/${fileName}`;
+
+    try {
+        await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
+            method: 'PUT',
+            headers: { 'Authorization': `token ${ghToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: `Add question bank: ${fileName}`,
+                content: base64Content
+            })
+        });
+        syncCloudRepositoryBankList();
+    } catch (err) { console.error("Cloud push failed:", err); }
+}
+
+window.deleteRemoteJsonBank = async function(path, sha) {
+    if(!confirm("Are you sure you want to completely erase this file from GitHub and UI repository channels?")) return;
+    
+    ghToken = document.getElementById('ghTokenInput').value.trim();
+    ghRepo = document.getElementById('ghRepoInput').value.trim();
+
+    try {
+        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `token ${ghToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: `Delete database item: ${path}`,
+                sha: sha
+            })
+        });
+        if(res.ok) {
+            alert("File pulled off cloud instances safely.");
+            startExamBtn.setAttribute('disabled', true);
+            syncCloudRepositoryBankList();
+        }
+    } catch (err) { alert("API deletion sequence faulted."); }
+}
+
+// --- STANDARD CONFIGURATIONS INTERFACE LISTENERS ---
+
 document.querySelectorAll('input[name="timerMode"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
         timerMode = e.target.value;
         if (timerMode === 'overall') {
-            timerInput.value = 30; // 30 minutes standard test reference defaults
+            timerInput.value = 30; 
             timerInputCaption.textContent = "Duration (Total test time in minutes)";
         } else {
             timerInput.value = 60;
@@ -43,26 +240,29 @@ document.querySelectorAll('input[name="timerMode"]').forEach(radio => {
     });
 });
 
-// JSON Input File validation loader hook
 fileUploader.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function(event) {
         try {
-            const data = JSON.parse(event.target.textContent || event.target.result);
+            const rawText = event.target.textContent || event.target.result;
+            const data = JSON.parse(rawText);
             fileQuestions = Array.isArray(data) ? data : (data.questions || []);
             if (fileQuestions.length > 0) {
                 startExamBtn.removeAttribute('disabled');
                 questionLimitInput.max = fileQuestions.length;
                 questionLimitInput.value = Math.min(20, fileQuestions.length);
+                
+                // Triggers an background upload task if connected credentials are detected
+                pushJsonBankToCloud(file.name, rawText);
             }
         } catch(e) { alert("JSON structural verification file read error."); }
     };
     reader.readAsText(file);
 });
 
-// --- Start Exam Orchestrator ---
+// --- CORE TEST SIMULATION OPERATORS ---
 startExamBtn.onclick = () => {
     let cloned = JSON.parse(JSON.stringify(fileQuestions));
     if (document.querySelector('input[name="orderType"]:checked').value === 'shuffled') {
@@ -74,22 +274,18 @@ startExamBtn.onclick = () => {
     
     questionStatuses = new Array(examQuestions.length).fill('notvisited');
     userAnswers = {};
-    questionTimers = {}; // Reset visual clock memories
+    questionTimers = {}; 
     currentIndex = 0;
     questionStatuses[0] = 'notanswered';
     
     consoleLangPref.value = langPrefSetup.value;
     
-    // Configure running timer properties accurately
     const rawTimeInput = parseInt(timerInput.value) || 60;
     if (timerMode === 'overall') {
-        overallTimeLeft = rawTimeInput * 60; // Minutes translated cleanly to seconds
+        overallTimeLeft = rawTimeInput * 60; 
     } else {
         totalDurationConfig = rawTimeInput;
-        // Seed the default clock duration for every single parsed question card item
-        examQuestions.forEach((_, idx) => {
-            questionTimers[idx] = totalDurationConfig;
-        });
+        examQuestions.forEach((_, idx) => { questionTimers[idx] = totalDurationConfig; });
     }
     
     configScreen.classList.add('hidden');
@@ -98,13 +294,16 @@ startExamBtn.onclick = () => {
     buildPaletteGridUI();
     renderQuestionIndex();
     
-    // Fire full overall exam counting track right here if mode is enabled
     if (timerMode === 'overall') initiateOverallExamTimerLoop();
 };
 
-consoleLangPref.onchange = () => { if (examQuestions.length > 0) populateQuestionText(); };
+consoleLangPref.onchange = () => { 
+    if (examQuestions.length > 0) {
+        populateQuestionText(); 
+        commitCurrentSessionProgressToCache();
+    } 
+};
 
-// --- Question Palette Handlers ---
 function buildPaletteGridUI() {
     paletteGrid.innerHTML = '';
     examQuestions.forEach((_, idx) => {
@@ -119,11 +318,9 @@ function buildPaletteGridUI() {
 
 function updatePaletteMetrics() {
     let answered = 0, notanswered = 0, notvisited = 0, review = 0;
-    
     examQuestions.forEach((_, idx) => {
         const cell = document.getElementById(`palette-cell-${idx}`);
         if (!cell) return;
-        
         const status = questionStatuses[idx];
         cell.className = `palette-cell cell-${status}`;
         if (idx === currentIndex) cell.classList.add('active-cell');
@@ -139,7 +336,6 @@ function updatePaletteMetrics() {
     document.getElementById('legendNotVisitedCount').textContent = notvisited;
     document.getElementById('legendReviewCount').textContent = review;
     
-    // Toggle overall submission safety button visibility on final question item index
     if (currentIndex === examQuestions.length - 1 || timerMode === "overall") {
         document.getElementById('finishExamBtn').classList.remove('hidden');
     } else {
@@ -147,15 +343,9 @@ function updatePaletteMetrics() {
     }
 }
 
-// --- Content Rendering Controller ---
 function renderQuestionIndex() {
-    if (timerMode === 'perQuestion') {
-        clearInterval(globalCountdown);
-    }
-    
-    if (currentIndex >= examQuestions.length) {
-        currentIndex = examQuestions.length - 1; 
-    }
+    if (timerMode === 'perQuestion') clearInterval(globalCountdown);
+    if (currentIndex >= examQuestions.length) currentIndex = examQuestions.length - 1; 
     
     document.getElementById('questionNumTitle').textContent = `Question No. ${currentIndex + 1}`;
     document.getElementById('consoleExamTitle').textContent = examQuestions[currentIndex].exam || "RRB ONLINE EXAMINATION MASTER";
@@ -165,6 +355,7 @@ function renderQuestionIndex() {
     updatePaletteMetrics();
     
     if (timerMode === 'perQuestion') initiatePerQuestionTimerLoop();
+    commitCurrentSessionProgressToCache(); // Push snapshot captures systematically
 }
 
 function populateQuestionText() {
@@ -197,41 +388,37 @@ function populateOptionsGrid() {
         if (savedAnswer && savedAnswer.selected === key) row.classList.add('selected');
         
         row.innerHTML = `<input type="radio" name="opt" value="${key}" ${savedAnswer && savedAnswer.selected === key ? 'checked' : ''}> <strong>(${key})</strong> ${val}`;
-        
         row.onclick = () => {
             row.querySelector('input').checked = true;
             document.querySelectorAll('.tcs-option-row').forEach(r => r.classList.remove('selected'));
             row.classList.add('selected');
+            
+            // Save temporary response inputs live to state maps cache parameters
+            userAnswers[currentIndex] = { selected: key, status: questionStatuses[currentIndex] === 'review' ? 'review':'answered' };
+            commitCurrentSessionProgressToCache();
         };
         optionsContainer.appendChild(row);
     });
 }
 
-// --- FIXED: Per-Question Timer System (Remembers Time Left) ---
 function initiatePerQuestionTimerLoop() {
     const textNode = document.getElementById('timerText');
-    
-    // If this question ran out of time entirely before, keep it locked at 0s
     if (questionTimers[currentIndex] <= 0) {
-        textNode.textContent = "00:00";
-        textNode.style.color = '#ea2027';
-        return;
+        textNode.textContent = "00:00"; textNode.style.color = '#ea2027'; return;
     }
 
     function drawClock() {
         let currentRemaining = questionTimers[currentIndex];
-        let mins = Math.floor(currentRemaining / 60);
-        let secs = currentRemaining % 60;
+        let mins = Math.floor(currentRemaining / 60); let secs = currentRemaining % 60;
         textNode.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-        
-        if (currentRemaining <= 10) textNode.style.color = '#ea2027';
-        else textNode.style.color = '#00d2d3';
+        if (currentRemaining <= 10) textNode.style.color = '#ea2027'; else textNode.style.color = '#00d2d3';
     }
     
     drawClock();
     globalCountdown = setInterval(() => {
         questionTimers[currentIndex]--;
         drawClock();
+        commitCurrentSessionProgressToCache(); // Persist clock variables tracking anomalies
         
         if (questionTimers[currentIndex] <= 0) {
             clearInterval(globalCountdown);
@@ -244,26 +431,21 @@ function initiatePerQuestionTimerLoop() {
     }, 1000);
 }
 
-// --- Total Exam Countdown Timer Mode Loop ---
 function initiateOverallExamTimerLoop() {
     const textNode = document.getElementById('timerText');
-    
     function drawClock() {
-        let mins = Math.floor(overallTimeLeft / 60);
-        let secs = overallTimeLeft % 60;
+        let mins = Math.floor(overallTimeLeft / 60); let secs = overallTimeLeft % 60;
         textNode.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-        if (overallTimeLeft <= 60) textNode.style.color = '#ea2027'; // Red warning on last remaining minute
-        else textNode.style.color = '#00d2d3';
+        if (overallTimeLeft <= 60) textNode.style.color = '#ea2027'; else textNode.style.color = '#00d2d3';
     }
-    
     drawClock();
     globalCountdown = setInterval(() => {
         overallTimeLeft--;
         drawClock();
-        
+        commitCurrentSessionProgressToCache();
         if (overallTimeLeft <= 0) {
             clearInterval(globalCountdown);
-            alert("⏰ Overall Exam Time is completely over! Submitting answers sheet now.");
+            alert("⏰ Total Exam Time Completed!");
             completeExamValidation();
         }
     }, 1000);
@@ -271,42 +453,29 @@ function initiateOverallExamTimerLoop() {
 
 function jumpToQuestionIndex(targetIdx) {
     if (timerMode === 'perQuestion') clearInterval(globalCountdown);
-    
     if (questionStatuses[currentIndex] !== 'answered' && questionStatuses[currentIndex] !== 'review') {
         questionStatuses[currentIndex] = 'notanswered';
     }
-    
     currentIndex = targetIdx;
     if (questionStatuses[currentIndex] === 'notvisited') questionStatuses[currentIndex] = 'notanswered';
     renderQuestionIndex();
 }
 
-// --- FIXED BUTTON EVENT LISTENERS ACTIONS ---
-
-// 1. Save & Next Button
 document.getElementById('submitBtn').onclick = () => {
     const selectedInput = document.querySelector('input[name="opt"]:checked');
-    if (!selectedInput) {
-        alert("Please select an option before saving. If you don't know the answer, use 'Skip/Mark for Review'.");
-        return;
-    }
+    if (!selectedInput) { alert("Please choose an answer."); return; }
     userAnswers[currentIndex] = { selected: selectedInput.value, status: 'answered' };
     questionStatuses[currentIndex] = 'answered';
     advanceNextExamIndex();
 };
 
-// 2. Mark For Review Button
 document.getElementById('reviewBtn').onclick = () => {
     const selectedInput = document.querySelector('input[name="opt"]:checked');
-    userAnswers[currentIndex] = { 
-        selected: selectedInput ? selectedInput.value : null, 
-        status: 'review' 
-    };
+    userAnswers[currentIndex] = { selected: selectedInput ? selectedInput.value : null, status: 'review' };
     questionStatuses[currentIndex] = 'review';
     advanceNextExamIndex();
 };
 
-// 3. Clear Response Button
 document.getElementById('clearResponseBtn').onclick = () => {
     userAnswers[currentIndex] = null;
     if (questionStatuses[currentIndex] === 'answered' || questionStatuses[currentIndex] === 'review') {
@@ -314,28 +483,25 @@ document.getElementById('clearResponseBtn').onclick = () => {
     }
     populateOptionsGrid();
     updatePaletteMetrics();
+    commitCurrentSessionProgressToCache();
 };
 
-// 4. Skip Button Handler (Triggered when user skips natively via index limits)
 function advanceNextExamIndex() {
     if (currentIndex < examQuestions.length - 1) {
         currentIndex++;
         renderQuestionIndex();
     } else if (timerMode === 'perQuestion') {
-        // If we reached the final question item under per-question setup, trigger results compilation
         completeExamValidation();
     }
 }
 
 document.getElementById('finishExamBtn').onclick = () => {
-    if (confirm("Are you sure you want to conclude and submit this exam session layout?")) {
-        completeExamValidation();
-    }
+    if (confirm("Submit your test paper console?")) completeExamValidation();
 };
 
-// --- Detailed Review Screen & Enhanced Visual Progress Bars Engine ---
 function completeExamValidation() {
     clearInterval(globalCountdown);
+    wipeSessionProgressCache(); // Wipe current state records clean upon submission
     examConsole.classList.add('hidden');
     resultScreen.classList.remove('hidden');
     
@@ -353,29 +519,11 @@ function completeExamValidation() {
         
         const card = document.createElement('div');
         card.className = 'audit-card';
-        
-        let badgeHTML = '';
-        if (record.status === 'timeout') {
-            card.classList.add('audit-timeout');
-            badgeHTML = `<span class="status-badge bg-timeout">Timed Out ⏰</span>`;
-        } else if (record.status === 'review') {
-            card.classList.add('audit-timeout');
-            badgeHTML = `<span class="status-badge" style="background:#9b59b6;">Marked For Review 🟣</span>`;
-        } else if (!record.selected) {
-            card.classList.add('audit-wrong');
-            badgeHTML = `<span class="status-badge bg-wrong">Skipped</span>`;
-        } else if (isCorrect) {
-            card.classList.add('audit-correct');
-            badgeHTML = `<span class="status-badge bg-correct">Correct +1</span>`;
-        } else {
-            card.classList.add('audit-wrong');
-            badgeHTML = `<span class="status-badge bg-wrong">Incorrect</span>`;
-        }
+        let badgeHTML = record.status === 'timeout' ? `<span class="status-badge bg-timeout">Timed Out ⏰</span>` : (record.status === 'review' ? `<span class="status-badge" style="background:#9b59b6;">Review 🟣</span>` : (!record.selected ? `<span class="status-badge bg-wrong">Skipped</span>` : (isCorrect ? `<span class="status-badge bg-correct">Correct +1</span>` : `<span class="status-badge bg-wrong">Incorrect</span>`)));
         
         card.innerHTML = `
             <div class="audit-header"><span>Question No. ${idx + 1}</span>${badgeHTML}</div>
-            <p><strong>English:</strong> ${q.text_en}</p>
-            <p style="color:#4a5568;"><strong>हिंदी:</strong> ${q.text_hi || ''}</p>
+            <p><strong>English:</strong> ${q.text_en}</p><p style="color:#4a5568;"><strong>हिंदी:</strong> ${q.text_hi || ''}</p>
             <div class="audit-choices-comparison">
                 <div>Your Selected Choice: <strong style="color:${isCorrect ? '#4cd137':'#ea2027'}">${record.selected || 'None'}</strong></div>
                 <div>Correct Answer Key: <strong style="color:#4cd137">${q.correct_answer.toUpperCase()}</strong></div>
@@ -388,13 +536,12 @@ function completeExamValidation() {
     document.getElementById('resScore').textContent = totalScore;
     document.getElementById('resTotal').textContent = totalQ;
     document.getElementById('resAccuracy').textContent = `${((totalScore / totalQ) * 100).toFixed(1)}%`;
-    
     document.getElementById('barCorrect').style.width = `${(totalScore / totalQ) * 100}%`;
     document.getElementById('barWrong').style.width = `${(wrongCount / totalQ) * 100}%`;
     document.getElementById('barSkipped').style.width = `${(reviewSkippedCount / totalQ) * 100}%`;
 }
 
-// --- Floating Virtual Calculator Functions ---
+// --- UPGRADED: SCIENTIFIC OPERATORS FLOATING CALCULATOR ---
 const calcPad = document.getElementById('floatingCalculator');
 document.getElementById('calcToggleBtn').onclick = () => calcPad.classList.toggle('hidden');
 document.getElementById('calcCloseBtn').onclick = () => calcPad.classList.add('hidden');
@@ -403,23 +550,24 @@ let calcExpression = "";
 window.pressCalcKey = function(key) {
     const disp = document.getElementById('calcDisplay');
     if (key === 'C') {
-        calcExpression = "";
-        disp.value = "0";
+        calcExpression = ""; disp.value = "0";
+    } else if (key === 'SQRT') {
+        try {
+            disp.value = Math.sqrt(eval(disp.value || calcExpression));
+            calcExpression = disp.value;
+        } catch(e) { disp.value = "Error"; }
     } else if (key === '=') {
         try {
-            disp.value = eval(calcExpression) || "0";
-            calcExpression = disp.value;
+            disp.value = eval(calcExpression) || "0"; calcExpression = disp.value;
         } catch(e) { disp.value = "Error"; calcExpression = ""; }
     } else {
         if (disp.value === "0" && !isNaN(key)) calcExpression = "";
-        calcExpression += key;
-        disp.value = calcExpression;
+        calcExpression += key; disp.value = calcExpression;
     }
 }
 
 document.getElementById('restartBtn').onclick = () => {
-    resultScreen.classList.add('hidden');
-    configScreen.classList.remove('hidden');
-    fileUploader.value = '';
-    startExamBtn.setAttribute('disabled', true);
+    resultScreen.classList.add('hidden'); configScreen.classList.remove('hidden');
+    fileUploader.value = ''; startExamBtn.setAttribute('disabled', true);
+    syncCloudRepositoryBankList();
 };
