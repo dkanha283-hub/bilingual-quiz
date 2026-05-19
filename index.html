@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RRB Online Exam Console (TCS iON Mock)</title>
+    <title>RRB Online Exam Console (TCS iON Mock Pro)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,13 +19,17 @@
             
             <div class="setup-group">
                 <label for="questionLimitInput"><strong>2. Number of Questions to Solve:</strong></label>
-                <input type="number" id="questionLimitInput" min="1" value="20" placeholder="e.g., 20">
-                <small style="color:#718096;">Leaves it at default or matches max file size if smaller.</small>
+                <input type="number" id="questionLimitInput" min="1" value="20">
             </div>
 
             <div class="setup-group">
-                <label for="timerInput"><strong>3. Timer per Question (seconds):</strong></label>
-                <input type="number" id="timerInput" min="5" max="600" value="60">
+                <label><strong>3. Timer Operation Mode:</strong></label>
+                <div class="radio-row">
+                    <label><input type="radio" name="timerMode" value="perQuestion" checked> Per-Question Clock</label>
+                    <label><input type="radio" name="timerMode" value="overall"> Total Exam Clock</label>
+                </div>
+                <input type="number" id="timerInput" min="5" value="60" style="margin-top: 8px;">
+                <span id="timerInputCaption" style="font-size:0.8rem; color:#718096;">Duration (seconds per question)</span>
             </div>
 
             <div class="setup-group">
@@ -54,11 +58,41 @@
             <div class="tcs-logo-area">
                 <span class="exam-title-text" id="consoleExamTitle">RRB ONLINE EXAMINATION</span>
             </div>
-            <div class="tcs-timer-box">
-                <span class="timer-label">Time Left:</span>
-                <span id="timerText" class="timer-countdown">00:00</span>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button id="calcToggleBtn" class="calc-toggle-btn">🧮 Calculator</button>
+                <div class="tcs-timer-box">
+                    <span class="timer-label">Time Left:</span>
+                    <span id="timerText" class="timer-countdown">00:00</span>
+                </div>
             </div>
         </header>
+
+        <div id="floatingCalculator" class="hidden mini-calculator-pad">
+            <div class="calc-header">
+                <span>Calculator / गणक</span>
+                <button id="calcCloseBtn" style="background:none; border:none; color:white; cursor:pointer; font-weight:bold;">X</button>
+            </div>
+            <input type="text" id="calcDisplay" readonly value="0">
+            <div class="calc-buttons-grid">
+                <button onclick="pressCalcKey('C')" class="btn-c">C</button>
+                <button onclick="pressCalcKey('/')">/</button>
+                <button onclick="pressCalcKey('*')">*</button>
+                <button onclick="pressCalcKey('-')">-</button>
+                <button onclick="pressCalcKey('7')">7</button>
+                <button onclick="pressCalcKey('8')">8</button>
+                <button onclick="pressCalcKey('9')">9</button>
+                <button onclick="pressCalcKey('+')">+</button>
+                <button onclick="pressCalcKey('4')">4</button>
+                <button onclick="pressCalcKey('5')">5</button>
+                <button onclick="pressCalcKey('6')">6</button>
+                <button onclick="pressCalcKey('.')">.</button>
+                <button onclick="pressCalcKey('1')">1</button>
+                <button onclick="pressCalcKey('2')">2</button>
+                <button onclick="pressCalcKey('3')">3</button>
+                <button onclick="pressCalcKey('=')" class="btn-equal" style="grid-row: span 2">=</button>
+                <button onclick="pressCalcKey('0')" style="grid-column: span 3">0</button>
+            </div>
+        </div>
 
         <div class="tcs-body-wrapper">
             <main class="tcs-left-panel">
@@ -75,7 +109,6 @@
                 </div>
 
                 <div id="questionDisplayContainer" class="tcs-question-box"></div>
-
                 <div id="optionsContainer" class="tcs-options-container"></div>
             </main>
 
@@ -92,6 +125,7 @@
                     <div class="legend-item"><span class="badge-box badge-answered" id="legendAnsweredCount">0</span> Answered</div>
                     <div class="legend-item"><span class="badge-box badge-notanswered" id="legendNotAnsweredCount">0</span> Not Answered</div>
                     <div class="legend-item"><span class="badge-box badge-notvisited" id="legendNotVisitedCount">0</span> Not Visited</div>
+                    <div class="legend-item"><span class="badge-box badge-review" id="legendReviewCount">0</span> For Review</div>
                 </div>
 
                 <div class="palette-title">Question Palette :</div>
@@ -100,8 +134,10 @@
         </div>
 
         <footer class="tcs-footer">
-            <button id="skipBtn" class="tcs-btn tcs-btn-gray">⏩ Skip Question</button>
+            <button id="clearResponseBtn" class="tcs-btn tcs-btn-gray">🧹 Clear Response</button>
+            <button id="reviewBtn" class="tcs-btn tcs-btn-orange">🟣 Mark for Review & Next</button>
             <button id="submitBtn" class="tcs-btn tcs-btn-green" style="margin-left: auto;">Save & Next ➡️</button>
+            <button id="finishExamBtn" class="tcs-btn tcs-btn-blue hidden">🔴 Submit Test</button>
         </footer>
     </div>
 
@@ -113,7 +149,14 @@
                 <div class="metric-block"><span id="resTotal">0</span>Attempted</div>
                 <div class="metric-block"><span id="resAccuracy">0%</span>Accuracy</div>
             </div>
-            <button id="restartBtn" class="tcs-btn tcs-btn-blue">🔄 Load New Exam Module</button>
+
+            <div class="metric-bars-wrapper">
+                <div class="bar-progress-row"><span class="lbl">Correct:</span><div class="bar-outer"><div id="barCorrect" class="bar-inner bg-correct"></div></div></div>
+                <div class="bar-progress-row"><span class="lbl">Wrong:</span><div class="bar-outer"><div id="barWrong" class="bar-inner bg-wrong"></div></div></div>
+                <div class="bar-progress-row"><span class="lbl">Review/Skipped:</span><div class="bar-outer"><div id="barSkipped" class="bar-inner bg-review"></div></div></div>
+            </div>
+            
+            <button id="restartBtn" class="tcs-btn tcs-btn-blue" style="margin-top:20px;">🔄 Load New Exam Module</button>
         </div>
 
         <h3>📝 Detailed Question Paper Audit Trail</h3>
