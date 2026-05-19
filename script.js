@@ -98,6 +98,8 @@ function updatePaletteMetrics() {
     
     examQuestions.forEach((_, idx) => {
         const cell = document.getElementById(`palette-cell-${idx}`);
+        if (!cell) return;
+        
         const status = questionStatuses[idx];
         
         cell.className = `palette-cell cell-${status}`;
@@ -164,7 +166,11 @@ function populateOptionsGrid() {
         row.className = 'tcs-option-row';
         if (savedAnswer && savedAnswer.selected === key) row.classList.add('selected');
         
-        row.innerHTML = `<input type="radio" name="opt" value="${key}" ${savedAnswer && savedAnswer.selected === key ? 'checked' : ''}> <strong>(${key})</strong> ${val}`;
+        row.innerHTML = `<input type="radio" name="opt" value="${key}" ${savedAnswer && savedAnswer.selected === key ? 'checked' : ''}> <strong>(A)</strong> ${val}`;
+        
+        // This makes sure the first letter matches option keys (A, B, C, D) perfectly
+        row.querySelector('strong').textContent = `(${key})`; 
+        
         row.onclick = () => {
             row.querySelector('input').checked = true;
             document.querySelectorAll('.tcs-option-row').forEach(r => r.classList.remove('selected'));
@@ -183,7 +189,6 @@ function initiateTimerCountdownLoop() {
         let secs = timeLeft % 60;
         textNode.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
         
-        // Critical alerting color states configuration updates
         if (timeLeft <= 10) textNode.style.color = '#ea2027';
         else textNode.style.color = '#00d2d3';
     }
@@ -195,7 +200,6 @@ function initiateTimerCountdownLoop() {
         
         if (timeLeft <= 0) {
             clearInterval(globalCountdown);
-            // Handle automatic lock timeout on resource items safely
             userAnswers[currentIndex] = { selected: null, status: 'timeout' };
             questionStatuses[currentIndex] = 'notanswered';
             advanceNextExamIndex();
@@ -207,7 +211,6 @@ function initiateTimerCountdownLoop() {
 function jumpToQuestionIndex(targetIdx) {
     clearInterval(globalCountdown);
     
-    // Save current unsubmitted work state if any as notanswered if not already green
     if (questionStatuses[currentIndex] !== 'answered') {
         questionStatuses[currentIndex] = 'notanswered';
     }
@@ -233,7 +236,6 @@ document.getElementById('submitBtn').onclick = () => {
 };
 
 document.getElementById('skipBtn').onclick = () => {
-    // If user already answered previously, skipping acts as clearing selection
     userAnswers[currentIndex] = { selected: null, status: 'skipped' };
     questionStatuses[currentIndex] = 'notanswered';
     advanceNextExamIndex();
@@ -260,7 +262,6 @@ function completeExamValidation() {
         
         if (isCorrect) totalScore++;
         
-        // Build dynamic visual audit trail item elements logs card mapping
         const card = document.createElement('div');
         card.className = 'audit-card';
         
@@ -294,7 +295,6 @@ function completeExamValidation() {
         auditContainer.appendChild(card);
     });
     
-    // Set dynamic score counter overview boxes metrics
     document.getElementById('resScore').textContent = totalScore;
     document.getElementById('resTotal').textContent = examQuestions.length;
     const finalPct = ((totalScore / examQuestions.length) * 100).toFixed(1);
