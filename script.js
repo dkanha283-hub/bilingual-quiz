@@ -1,216 +1,310 @@
-// --- Memory State Configuration Variables ---
-let rawQuestions = [];
-let targetQuestions = [];
+// --- Core Console System Variables State Storage ---
+let fileQuestions = [];
+let examQuestions = [];
 let currentIndex = 0;
-let userScore = 0;
-let currentTimer = null;
+
+let userAnswers = {}; // Format mapping: { index: { selected: 'A', status: 'answered'|'skipped'|'timeout' } }
+let questionStatuses = []; // Array keeping track of structural index states: 'notvisited', 'notanswered', 'answered'
+
+let globalCountdown = null;
 let timeLeft = 0;
-let selectedOptionKey = null;
+let questionDuration = 60; // Pulled dynamically from setup config inputs
 
-// --- DOM Nodes Bindings ---
+// --- DOM Layout Selectors Bindings ---
 const fileUploader = document.getElementById('fileUploader');
+const questionLimitInput = document.getElementById('questionLimitInput');
 const timerInput = document.getElementById('timerInput');
-const clearBtn = document.getElementById('clearBtn');
-const submitBtn = document.getElementById('submitBtn');
-const restartBtn = document.getElementById('restartBtn');
+const langPrefSetup = document.getElementById('langPrefSetup');
+const startExamBtn = document.getElementById('startExamBtn');
 
-const uploadPrompt = document.getElementById('uploadPrompt');
-const quizContainer = document.getElementById('quizContainer');
-const resultContainer = document.getElementById('resultContainer');
+const configScreen = document.getElementById('configScreen');
+const examConsole = document.getElementById('examConsole');
+const resultScreen = document.getElementById('resultScreen');
+
 const questionDisplayContainer = document.getElementById('questionDisplayContainer');
+const optionsContainer = document.getElementById('optionsContainer');
+const paletteGrid = document.getElementById('paletteGrid');
+const consoleLangPref = document.getElementById('consoleLangPref');
 
-// Listen for global language switch adjustments live during test
-document.querySelectorAll('input[name="langPref"]').forEach(radio => {
-    radio.addEventListener('change', () => {
-        if (targetQuestions.length > 0 && currentIndex < targetQuestions.length) {
-            renderLanguageContent(); // Instantly change text language without breaking state
-        }
-    });
-});
-
-// --- File Resource Loading Engine ---
+// Enable/Disable Start button depending on loaded dataset content 
 fileUploader.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = function(event) {
         try {
-            const parsedData = JSON.parse(event.target.textContent || event.target.result);
-            rawQuestions = Array.isArray(parsedData) ? parsedData : (parsedData.questions || []);
-            
-            if (rawQuestions.length > 0) {
-                initializeQuiz();
-            } else {
-                alert("Invalid configuration template. Check JSON arrays schema syntax.");
+            const data = JSON.parse(event.target.textContent || event.target.result);
+            fileQuestions = Array.isArray(data) ? data : (data.questions || []);
+            if (fileQuestions.length > 0) {
+                startExamBtn.removeAttribute('disabled');
+                questionLimitInput.max = fileQuestions.length;
+                questionLimitInput.value = Math.min(20, fileQuestions.length);
             }
-        } catch (err) {
-            alert("Error reading file stream properties: " + err);
-        }
+        } catch(e) { alert("JSON Parsing Error layout format."); }
     };
     reader.readAsText(file);
 });
 
-// --- Quiz State Controllers ---
-function initializeQuiz() {
-    currentIndex = 0;
-    userScore = 0;
-    
-    // Deep clone array questions safely
-    targetQuestions = JSON.parse(JSON.stringify(rawQuestions));
-    
+// --- Start Exam Orchestrator Initialization Core ---
+startExamBtn.onclick = () => {
+    // 1. Process Array slicing based on user question limits preference configuration
+    let cloned = JSON.parse(JSON.stringify(fileQuestions));
     const orderType = document.querySelector('input[name="orderType"]:checked').value;
     if (orderType === 'shuffled') {
-        targetQuestions.sort(() => Math.random() - 0.5);
+        cloned.sort(() => Math.random() - 0.5);
     }
     
-    uploadPrompt.classList.add('hidden');
-    resultContainer.classList.add('hidden');
-    quizContainer.classList.remove('hidden');
+    let limit = parseInt(questionLimitInput.value) || cloned.length;
+    examQuestions = cloned.slice(0, limit);
     
-    renderCurrentQuestion();
+    // 2. Initialize status states matrix rows maps
+    questionStatuses = new Array(examQuestions.length).fill('notvisited');
+    userAnswers = {};
+    currentIndex = 0;
+    
+    // Set initial question to 'notanswered' because it is now visited
+    questionStatuses[0] = 'notanswered';
+    
+    // Set layout display preferences mapping dropdown views
+    consoleLangPref.value = langPrefSetup.value;
+    questionDuration = parseInt(timerInput.value) || 60;
+    
+    // 3. Swap UI Panels view configurations
+    configScreen.classList.add('hidden');
+    examConsole.classList.remove('hidden');
+    
+    buildPaletteGridUI();
+    renderQuestionIndex();
+};
+
+// Sync interface text updates if the layout language dropdown updates mid-test
+consoleLangPref.onchange = () => { if (examQuestions.length > 0) populateQuestionText(); };
+
+// --- Layout Grid Matrix Rendering Engine ---
+function buildPaletteGridUI() {
+    paletteGrid.innerHTML = '';
+    examQuestions.forEach((_, idx) => {
+        const cell = document.createElement('div');
+        cell.className = `palette-cell cell-notvisited`;
+        cell.id = `palette-cell-${idx}`;
+        cell.textContent = idx + 1;
+        cell.onclick = () => jumpToQuestionIndex(idx);
+        paletteGrid.appendChild(cell);
+    });
 }
 
-function renderCurrentQuestion() {
-    clearInterval(currentTimer);
-    selectedOptionKey = null;
+function updatePaletteMetrics() {
+    let answered = 0, notanswered = 0, notvisited = 0;
     
-    if (currentIndex >= targetQuestions.length) {
-        showResults();
+    examQuestions.forEach((_, idx) => {
+        const cell = document.getElementById(`palette-cell-${idx}`);
+        const status = questionStatuses[idx];
+        
+        cell.className = `palette-cell cell-${status}`;
+        if (idx === currentIndex) cell.classList.add('active-cell');
+        
+        if (status === 'answered') answered++;
+        else if (status === 'notanswered') notanswered++;
+        else notvisited++;
+    });
+    
+    document.getElementById('legendAnsweredCount').textContent = answered;
+    document.getElementById('legendNotAnsweredCount').textContent = notanswered;
+    document.getElementById('legendNotVisitedCount').textContent = notvisited;
+}
+
+// --- Render Content Controller Core Functions ---
+function renderQuestionIndex() {
+    clearInterval(globalCountdown);
+    
+    if (currentIndex >= examQuestions.length) {
+        completeExamValidation();
         return;
     }
     
-    const q = targetQuestions[currentIndex];
+    document.getElementById('questionNumTitle').textContent = `Question No. ${currentIndex + 1}`;
+    document.getElementById('consoleExamTitle').textContent = examQuestions[currentIndex].exam || "RRB ONLINE EXAMINATION MASTER";
     
-    // Header progression updates
-    document.getElementById('questionNum').textContent = `Question ${currentIndex + 1} of ${targetQuestions.length}`;
-    document.getElementById('examTarget').textContent = q.exam ? `🎯 ${q.exam}` : '';
+    populateQuestionText();
+    populateOptionsGrid();
+    updatePaletteMetrics();
     
-    // Call standalone function to parse selection context languages
-    renderLanguageContent();
-    
-    // Options grid iteration mapping
-    const optionsContainer = document.getElementById('optionsContainer');
-    optionsContainer.innerHTML = '';
-    
-    Object.keys(q.options).forEach(key => {
-        const optionValue = q.options[key];
-        if (typeof optionValue === 'string' && optionValue.startsWith('no_option')) return;
-        
-        const card = document.createElement('div');
-        card.className = 'option-card';
-        card.innerHTML = `<strong>${key}:</strong> <span>${optionValue}</span>`;
-        card.onclick = () => selectOption(card, key);
-        optionsContainer.appendChild(card);
-    });
-    
-    // Set timer values up natively
-    timeLeft = parseInt(timerInput.value) || 60;
-    executeRunningTimer();
+    // Launch dynamic running timer countdown sequence parameters
+    timeLeft = questionDuration;
+    initiateTimerCountdownLoop();
 }
 
-// --- Dynamic Interface Language Switcher ---
-function renderLanguageContent() {
-    const q = targetQuestions[currentIndex];
-    const langPref = document.querySelector('input[name="langPref"]:checked').value;
-    
+function populateQuestionText() {
+    const q = examQuestions[currentIndex];
+    const viewMode = consoleLangPref.value;
     questionDisplayContainer.innerHTML = '';
     
-    const wrapperCard = document.createElement('div');
-    wrapperCard.className = 'q-box';
-    
-    if (langPref === 'en') {
-        wrapperCard.innerHTML = `<h3>English</h3><p class="q-text">${q.text_en}</p>`;
-    } else if (langPref === 'hi') {
-        wrapperCard.innerHTML = `<h3>Hindi (हिंदी)</h3><p class="q-text">${q.text_hi}</p>`;
-    } else {
-        // Both (Bilingual Mode) stacked inside one single viewport card block seamlessly
-        wrapperCard.innerHTML = `
-            <h3>English</h3>
-            <p class="q-text">${q.text_en}</p>
-            <div class="q-divider"></div>
-            <h3>Hindi (हिंदी)</h3>
-            <p class="q-text">${q.text_hi}</p>
-        `;
+    if (viewMode === 'en' || viewMode === 'both') {
+        questionDisplayContainer.innerHTML += `<div class="q-subheading">English Version</div><p style="margin:0 0 15px 0; font-weight:600;">${q.text_en}</p>`;
     }
-    questionDisplayContainer.appendChild(wrapperCard);
+    if (viewMode === 'both' && q.text_hi) {
+        questionDisplayContainer.innerHTML += `<div class="tcs-divider-line"></div>`;
+    }
+    if (viewMode === 'hi' || viewMode === 'both') {
+        questionDisplayContainer.innerHTML += `<div class="q-subheading">Hindi Version (हिंदी)</div><p style="margin:0; font-weight:600; font-size:1.25rem;">${q.text_hi}</p>`;
+    }
 }
 
-function selectOption(domCard, key) {
-    document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
-    domCard.classList.add('selected');
-    selectedOptionKey = key;
-}
-
-// --- Running Timer System Core ---
-function executeRunningTimer() {
-    const bar = document.getElementById('timerBar');
-    const text = document.getElementById('timerText');
-    const maxTime = parseInt(timerInput.value) || 60;
+function populateOptionsGrid() {
+    const q = examQuestions[currentIndex];
+    optionsContainer.innerHTML = '';
     
-    function refreshLayoutView() {
-        text.textContent = `${timeLeft}s`;
-        const percentage = (timeLeft / maxTime) * 100;
-        bar.style.width = `${percentage}%`;
+    const savedAnswer = userAnswers[currentIndex];
+    
+    Object.keys(q.options).forEach(key => {
+        const val = q.options[key];
+        if (typeof val === 'string' && val.startsWith('no_option')) return;
         
-        // Dynamic Warning Color Shift when running low on clock ticks
-        if (timeLeft <= 10) {
-            bar.style.backgroundColor = '#e53e3e'; // Turning bright warning crimson Red
-            text.style.color = '#e53e3e';
-        } else {
-            bar.style.backgroundColor = '#3182ce'; // Normal accent Blue
-            text.style.color = '#2b6cb0';
-        }
+        const row = document.createElement('div');
+        row.className = 'tcs-option-row';
+        if (savedAnswer && savedAnswer.selected === key) row.classList.add('selected');
+        
+        row.innerHTML = `<input type="radio" name="opt" value="${key}" ${savedAnswer && savedAnswer.selected === key ? 'checked' : ''}> <strong>(${key})</strong> ${val}`;
+        row.onclick = () => {
+            row.querySelector('input').checked = true;
+            document.querySelectorAll('.tcs-option-row').forEach(r => r.classList.remove('selected'));
+            row.classList.add('selected');
+        };
+        optionsContainer.appendChild(row);
+    });
+}
+
+// --- Active Ticker Clock Timer Controller ---
+function initiateTimerCountdownLoop() {
+    const textNode = document.getElementById('timerText');
+    
+    function drawClock() {
+        let mins = Math.floor(timeLeft / 60);
+        let secs = timeLeft % 60;
+        textNode.textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+        
+        // Critical alerting color states configuration updates
+        if (timeLeft <= 10) textNode.style.color = '#ea2027';
+        else textNode.style.color = '#00d2d3';
     }
     
-    refreshLayoutView();
-    
-    currentTimer = setInterval(() => {
+    drawClock();
+    globalCountdown = setInterval(() => {
         timeLeft--;
-        refreshLayoutView();
+        drawClock();
         
         if (timeLeft <= 0) {
-            clearInterval(currentTimer);
-            processAnswerSubmission(); // Advance automatically on clock zero out
+            clearInterval(globalCountdown);
+            // Handle automatic lock timeout on resource items safely
+            userAnswers[currentIndex] = { selected: null, status: 'timeout' };
+            questionStatuses[currentIndex] = 'notanswered';
+            advanceNextExamIndex();
         }
     }, 1000);
 }
 
-// --- Verification & Calculation Form Logic ---
-submitBtn.onclick = processAnswerSubmission;
-
-function processAnswerSubmission() {
-    clearInterval(currentTimer);
-    const q = targetQuestions[currentIndex];
+// --- Inter-Question Palette Navigation Matrix jump logic ---
+function jumpToQuestionIndex(targetIdx) {
+    clearInterval(globalCountdown);
     
-    // Clean string variants checks mapping
-    if (selectedOptionKey && selectedOptionKey.toUpperCase() === q.correct_answer.toUpperCase().trim()) {
-        userScore++;
+    // Save current unsubmitted work state if any as notanswered if not already green
+    if (questionStatuses[currentIndex] !== 'answered') {
+        questionStatuses[currentIndex] = 'notanswered';
     }
     
-    currentIndex++;
-    renderCurrentQuestion();
+    currentIndex = targetIdx;
+    if (questionStatuses[currentIndex] === 'notvisited') {
+        questionStatuses[currentIndex] = 'notanswered';
+    }
+    renderQuestionIndex();
 }
 
-function showResults() {
-    quizContainer.classList.add('hidden');
-    resultContainer.classList.remove('hidden');
+// --- Verification Actions Forms Footers ---
+document.getElementById('submitBtn').onclick = () => {
+    const selectedInput = document.querySelector('input[name="opt"]:checked');
+    if (!selectedInput) {
+        alert("Please choose an answer option selection, or click 'Skip Question' if you don't know it.");
+        return;
+    }
     
-    document.getElementById('finalScore').textContent = userScore;
-    document.getElementById('totalQuestions').textContent = targetQuestions.length;
-    
-    const accuracy = ((userScore / targetQuestions.length) * 100).toFixed(2);
-    document.getElementById('accuracyText').innerHTML = `Accuracy Rate: <strong>${accuracy}%</strong>`;
-}
-
-// --- Reset Parameters Cleanup ---
-clearBtn.onclick = () => {
-    clearInterval(currentTimer);
-    fileUploader.value = '';
-    rawQuestions = [];
-    quizContainer.classList.add('hidden');
-    resultContainer.classList.add('hidden');
-    uploadPrompt.classList.remove('hidden');
+    userAnswers[currentIndex] = { selected: selectedInput.value, status: 'answered' };
+    questionStatuses[currentIndex] = 'answered';
+    advanceNextExamIndex();
 };
 
-restartBtn.onclick = initializeQuiz;
+document.getElementById('skipBtn').onclick = () => {
+    // If user already answered previously, skipping acts as clearing selection
+    userAnswers[currentIndex] = { selected: null, status: 'skipped' };
+    questionStatuses[currentIndex] = 'notanswered';
+    advanceNextExamIndex();
+};
+
+function advanceNextExamIndex() {
+    currentIndex++;
+    renderQuestionIndex();
+}
+
+// --- Detailed Evaluation Review Screen Rendering Module ---
+function completeExamValidation() {
+    clearInterval(globalCountdown);
+    examConsole.classList.add('hidden');
+    resultScreen.classList.remove('hidden');
+    
+    let totalScore = 0;
+    const auditContainer = document.getElementById('reviewAuditTrailContainer');
+    auditContainer.innerHTML = '';
+    
+    examQuestions.forEach((q, idx) => {
+        const record = userAnswers[idx] || { selected: null, status: 'skipped' };
+        const isCorrect = record.selected && record.selected.toUpperCase() === q.correct_answer.toUpperCase().trim();
+        
+        if (isCorrect) totalScore++;
+        
+        // Build dynamic visual audit trail item elements logs card mapping
+        const card = document.createElement('div');
+        card.className = 'audit-card';
+        
+        let badgeHTML = '';
+        if (record.status === 'timeout') {
+            card.classList.add('audit-timeout');
+            badgeHTML = `<span class="status-badge bg-timeout">Timed Out ⏰</span>`;
+        } else if (!record.selected) {
+            card.classList.add('audit-wrong');
+            badgeHTML = `<span class="status-badge bg-wrong">Skipped / Unanswered</span>`;
+        } else if (isCorrect) {
+            card.classList.add('audit-correct');
+            badgeHTML = `<span class="status-badge bg-correct">Correct +1</span>`;
+        } else {
+            card.classList.add('audit-wrong');
+            badgeHTML = `<span class="status-badge bg-wrong">Incorrect</span>`;
+        }
+        
+        card.innerHTML = `
+            <div class="audit-header">
+                <span>Question No. ${idx + 1}</span>
+                ${badgeHTML}
+            </div>
+            <p><strong>English:</strong> ${q.text_en}</p>
+            <p style="color:#4a5568;"><strong>हिंदी:</strong> ${q.text_hi || ''}</p>
+            <div class="audit-choices-comparison">
+                <div>Your Selected Choice: <strong style="color:${isCorrect ? '#4cd137':'#ea2027'}">${record.selected || 'None (No Selection)'}</strong></div>
+                <div>Correct Answer Key: <strong style="color:#4cd137">${q.correct_answer.toUpperCase()}</strong></div>
+            </div>
+        `;
+        auditContainer.appendChild(card);
+    });
+    
+    // Set dynamic score counter overview boxes metrics
+    document.getElementById('resScore').textContent = totalScore;
+    document.getElementById('resTotal').textContent = examQuestions.length;
+    const finalPct = ((totalScore / examQuestions.length) * 100).toFixed(1);
+    document.getElementById('resAccuracy').textContent = `${finalPct}%`;
+}
+
+// Reset System Engine loops to front settings configurations dashboard view
+document.getElementById('restartBtn').onclick = () => {
+    resultScreen.classList.add('hidden');
+    configScreen.classList.remove('hidden');
+    fileUploader.value = '';
+    startExamBtn.setAttribute('disabled', true);
+};
