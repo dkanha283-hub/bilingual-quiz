@@ -15,7 +15,7 @@ let overallTimeLeft = 0;
 // GitHub Sync Management States
 let ghToken = "";
 let ghRepo = "";
-const targetFolder = "quiz-banks"; // Repository directory path folder where configurations live
+const targetFolder = "quiz-banks"; 
 
 // --- DOM Nodes Layout Selectors Bindings ---
 const fileUploader = document.getElementById('fileUploader');
@@ -36,8 +36,6 @@ const consoleLangPref = document.getElementById('consoleLangPref');
 const cloudBankFilesContainer = document.getElementById('cloudBankFilesContainer');
 
 // --- RESUMABLE AUTO-SAVE ENGINE (LOCAL STORAGE) ---
-
-// Automatically verifies layout persistence checkpoints on startup lifecycle
 window.addEventListener('DOMContentLoaded', () => {
     loadCachedGithubCredentials();
     if (localStorage.getItem('rrb_quiz_active_state') === 'true') {
@@ -71,7 +69,6 @@ function wipeSessionProgressCache() {
     localStorage.removeItem('rrb_quiz_consoleLangPref');
 }
 
-// Interrupted state listeners modals confirmations
 document.getElementById('resumeConfirmBtn').onclick = () => {
     document.getElementById('recoveryModal').classList.add('hidden');
     try {
@@ -86,7 +83,7 @@ document.getElementById('resumeConfirmBtn').onclick = () => {
         consoleLangPref.value = localStorage.getItem('rrb_quiz_consoleLangPref');
 
         configScreen.classList.add('hidden');
-        examConsole.classList.remove('hidden');
+        examConsole.remove('hidden');
         
         buildPaletteGridUI();
         renderQuestionIndex();
@@ -103,7 +100,6 @@ document.getElementById('resumeRejectBtn').onclick = () => {
 };
 
 // --- DYNAMIC GITHUB API SYNCHRONIZATION ENGINE ---
-
 function loadCachedGithubCredentials() {
     if(localStorage.getItem('rrb_git_token')) {
         document.getElementById('ghTokenInput').value = localStorage.getItem('rrb_git_token');
@@ -130,20 +126,29 @@ async function syncCloudRepositoryBankList() {
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     if (!ghToken || !ghRepo) return;
 
-    cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#718096; font-size:0.85rem;">Fetching remote tree layers...</div>`;
+    cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#718096; font-size:0.85rem;">Connecting to GitHub...</div>`;
     
     try {
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${targetFolder}`, {
-            headers: { 'Authorization': `token ${ghToken}`, 'Accept': 'application/vnd.github.v3+json' }
+            headers: { 
+                'Authorization': `token ${ghToken}`, 
+                'Accept': 'application/vnd.github.v3+json',
+                'Cache-Control': 'no-cache'
+            }
         });
         
+        // FIXED: Gracefully handle an empty or non-existent folder without crashing
         if (res.status === 404) {
-            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#a0aec0; font-size:0.85rem;">Folder empty. Sync files by drag-and-drop.</div>`;
+            cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#a0aec0; font-size:0.85rem;">No cloud files synced yet. Upload a local file below to create your bank folder!</div>`;
             return;
         }
 
+        if (!res.ok) {
+            throw new Error(`GitHub API responded with status ${res.status}`);
+        }
+
         const files = await res.json();
-        const jsonFiles = files.filter(f => f.name.endsWith('.json'));
+        const jsonFiles = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json')) : [];
 
         if(jsonFiles.length === 0) {
             cloudBankFilesContainer.innerHTML = `<div style="text-align:center; padding:10px; color:#a0aec0; font-size:0.85rem;">No JSON banks discovered inside repository.</div>`;
@@ -155,20 +160,29 @@ async function syncCloudRepositoryBankList() {
             const row = document.createElement('div');
             row.className = 'cloud-file-row';
             row.innerHTML = `
-                <span class="cloud-file-name" onclick="loadRemoteJsonBank('${file.path}')">${file.name}</span>
-                <button class="cloud-file-delete" onclick="deleteRemoteJsonBank('${file.path}', '${file.sha}')">×</button>
+                <span class="cloud-file-name" data-path="${file.path}">${file.name}</span>
+                <button class="cloud-file-delete" data-path="${file.path}" data-sha="${file.sha}">×</button>
             `;
+            
+            // FIXED: Standardize event attachments instead of inline wrappers
+            row.querySelector('.cloud-file-name').onclick = () => loadRemoteJsonBank(file.path);
+            row.querySelector('.cloud-file-delete').onclick = () => deleteRemoteJsonBank(file.path, file.sha);
+            
             cloudBankFilesContainer.appendChild(row);
         });
     } catch (err) {
-        cloudBankFilesContainer.innerHTML = `<div style="color:red; font-size:0.8rem; padding:10px;">Connection failed API: ${err}</div>`;
+        cloudBankFilesContainer.innerHTML = `<div style="color:#e53e3e; font-size:0.8rem; padding:10px; font-weight:bold;">Error: Verify token validity or repository name format.</div>`;
     }
 }
 
 async function loadRemoteJsonBank(path) {
     try {
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
-            headers: { 'Authorization': `token ${ghToken}`, 'Accept': 'application/vnd.github.v3.raw' }
+            headers: { 
+                'Authorization': `token ${ghToken}`, 
+                'Accept': 'application/vnd.github.v3.raw',
+                'Cache-Control': 'no-cache'
+            }
         });
         const data = await res.json();
         fileQuestions = Array.isArray(data) ? data : (data.questions || []);
@@ -176,9 +190,9 @@ async function loadRemoteJsonBank(path) {
             startExamBtn.removeAttribute('disabled');
             questionLimitInput.max = fileQuestions.length;
             questionLimitInput.value = Math.min(20, fileQuestions.length);
-            alert(`Loaded: ${path.split('/').pop()} successfully! Click Start Exam below.`);
+            alert(`Loaded: ${path.split('/').pop()} successfully! Tap 'Start Exam' below.`);
         }
-    } catch(err) { alert("Failed pulling target resource stream data configurations."); }
+    } catch(err) { alert("Failed downloading the question bank data."); }
 }
 
 async function pushJsonBankToCloud(fileName, stringContent) {
@@ -186,24 +200,33 @@ async function pushJsonBankToCloud(fileName, stringContent) {
     ghRepo = document.getElementById('ghRepoInput').value.trim();
     if (!ghToken || !ghRepo) return;
 
-    const base64Content = btoa(unescape(encodeURIComponent(stringContent)));
+    // FIXED: Mobile-friendly safe UTF-8 base64 converter encoding string
+    const base64Content = btoa(encodeURIComponent(stringContent).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+        return String.fromCharCode('0x' + p1);
+    }));
+    
     const path = `${targetFolder}/${fileName}`;
 
     try {
-        await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
+        const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
             method: 'PUT',
-            headers: { 'Authorization': `token ${ghToken}`, 'Content-Type': 'application/json' },
+            headers: { 
+                'Authorization': `token ${ghToken}`, 
+                'Content-Type': 'application/json' 
+            },
             body: JSON.stringify({
                 message: `Add question bank: ${fileName}`,
                 content: base64Content
             })
         });
-        syncCloudRepositoryBankList();
+        if (res.ok) {
+            setTimeout(syncCloudRepositoryBankList, 1500); // Wait briefly for GitHub servers to cache directory tree
+        }
     } catch (err) { console.error("Cloud push failed:", err); }
 }
 
 window.deleteRemoteJsonBank = async function(path, sha) {
-    if(!confirm("Are you sure you want to completely erase this file from GitHub and UI repository channels?")) return;
+    if(!confirm("Are you sure you want to completely erase this file from GitHub and your UI view?")) return;
     
     ghToken = document.getElementById('ghTokenInput').value.trim();
     ghRepo = document.getElementById('ghRepoInput').value.trim();
@@ -211,22 +234,26 @@ window.deleteRemoteJsonBank = async function(path, sha) {
     try {
         const res = await fetch(`https://api.github.com/repos/${ghRepo}/contents/${path}`, {
             method: 'DELETE',
-            headers: { 'Authorization': `token ${ghToken}`, 'Content-Type': 'application/json' },
+            headers: { 
+                'Authorization': `token ${ghToken}`, 
+                'Content-Type': 'application/json' 
+            },
             body: JSON.stringify({
                 message: `Delete database item: ${path}`,
                 sha: sha
             })
         });
         if(res.ok) {
-            alert("File pulled off cloud instances safely.");
+            alert("File removed from GitHub successfully.");
             startExamBtn.setAttribute('disabled', true);
-            syncCloudRepositoryBankList();
+            setTimeout(syncCloudRepositoryBankList, 1000);
+        } else {
+            alert("Error deleting file. Your token might lack full 'repo' scope deletion capabilities.");
         }
-    } catch (err) { alert("API deletion sequence faulted."); }
+    } catch (err) { alert("API connection failure."); }
 }
 
 // --- STANDARD CONFIGURATIONS INTERFACE LISTENERS ---
-
 document.querySelectorAll('input[name="timerMode"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
         timerMode = e.target.value;
@@ -254,10 +281,9 @@ fileUploader.addEventListener('change', (e) => {
                 questionLimitInput.max = fileQuestions.length;
                 questionLimitInput.value = Math.min(20, fileQuestions.length);
                 
-                // Triggers an background upload task if connected credentials are detected
                 pushJsonBankToCloud(file.name, rawText);
             }
-        } catch(e) { alert("JSON structural verification file read error."); }
+        } catch(e) { alert("JSON file validation error."); }
     };
     reader.readAsText(file);
 });
@@ -355,7 +381,7 @@ function renderQuestionIndex() {
     updatePaletteMetrics();
     
     if (timerMode === 'perQuestion') initiatePerQuestionTimerLoop();
-    commitCurrentSessionProgressToCache(); // Push snapshot captures systematically
+    commitCurrentSessionProgressToCache(); 
 }
 
 function populateQuestionText() {
@@ -393,7 +419,6 @@ function populateOptionsGrid() {
             document.querySelectorAll('.tcs-option-row').forEach(r => r.classList.remove('selected'));
             row.classList.add('selected');
             
-            // Save temporary response inputs live to state maps cache parameters
             userAnswers[currentIndex] = { selected: key, status: questionStatuses[currentIndex] === 'review' ? 'review':'answered' };
             commitCurrentSessionProgressToCache();
         };
@@ -418,7 +443,7 @@ function initiatePerQuestionTimerLoop() {
     globalCountdown = setInterval(() => {
         questionTimers[currentIndex]--;
         drawClock();
-        commitCurrentSessionProgressToCache(); // Persist clock variables tracking anomalies
+        commitCurrentSessionProgressToCache(); 
         
         if (questionTimers[currentIndex] <= 0) {
             clearInterval(globalCountdown);
@@ -501,7 +526,7 @@ document.getElementById('finishExamBtn').onclick = () => {
 
 function completeExamValidation() {
     clearInterval(globalCountdown);
-    wipeSessionProgressCache(); // Wipe current state records clean upon submission
+    wipeSessionProgressCache(); 
     examConsole.classList.add('hidden');
     resultScreen.classList.remove('hidden');
     
@@ -541,7 +566,7 @@ function completeExamValidation() {
     document.getElementById('barSkipped').style.width = `${(reviewSkippedCount / totalQ) * 100}%`;
 }
 
-// --- UPGRADED: SCIENTIFIC OPERATORS FLOATING CALCULATOR ---
+// --- FLOATING SCIENTIFIC CALCULATOR ---
 const calcPad = document.getElementById('floatingCalculator');
 document.getElementById('calcToggleBtn').onclick = () => calcPad.classList.toggle('hidden');
 document.getElementById('calcCloseBtn').onclick = () => calcPad.classList.add('hidden');
