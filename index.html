@@ -25,17 +25,17 @@
             <hr>
 
             <div class="setup-group github-config-box">
-                <label>⛓️ GitHub API Sync Configurations:</label>
+                <label>⛓️ GitHub API Sync Configurations (Optional):</label>
                 <input type="password" id="ghTokenInput" placeholder="Enter GitHub Token (ghp_...)">
                 <input type="text" id="ghRepoInput" placeholder="Username/Repository" value="dkanha283-hub/bilingual-quiz">
                 <button id="connectGhBtn" class="tcs-btn tcs-btn-gray" style="margin-top:5px; padding:8px; background: #34495e; color: white;">Connect & Fetch Shared Banks</button>
-                <div id="apiStatusLog" style="margin-top: 8px; font-size: 0.8rem; color: #718096; font-family: monospace; background: #edf2f7; padding: 4px; border-radius: 4px; word-break: break-all;">Status: Waiting for connection...</div>
+                <div id="apiStatusLog" style="margin-top: 8px; font-size: 0.8rem; color: #718096; font-family: monospace; background: #edf2f7; padding: 4px; border-radius: 4px; word-break: break-all;">Status: Idle (Using Local Cache Modality)</div>
             </div>
 
             <div class="setup-group">
                 <label>📁 Select Question Bank Source:</label>
                 <select id="bankSourceDropdown" style="margin-bottom: 10px; padding: 10px; border-radius: 4px; border: 1px solid #cbd5e0;">
-                    <option value="default_percentage">Default Pre-loaded: Percentage Sheet (61 Questions)</option>
+                    <option value="default_percentage">Default Pre-loaded: Percentage Sheet (Full Bank)</option>
                     <option value="local_upload">Upload custom JSON file from device...</option>
                 </select>
                 
@@ -45,7 +45,7 @@
                 
                 <div class="bank-list-title">Active Test Repositories on Cloud / UI:</div>
                 <div id="cloudBankFilesContainer" class="cloud-files-list">
-                    <div style="color:#2b6cb0; font-size:0.85rem; text-align:center; padding:10px; font-weight: bold;">✓ Percentage Sheet data preset is loaded by default.</div>
+                    <div id="fallbackNotice" style="color:#2b6cb0; font-size:0.85rem; text-align:center; padding:10px; font-weight: bold;">✓ Percentage Sheet preset data is completely armed.</div>
                 </div>
             </div>
 
@@ -59,7 +59,7 @@
             
             <div class="setup-group">
                 <label for="questionLimitInput">📊 Number of Questions to Solve:</label>
-                <input type="number" id="questionLimitInput" min="1" value="20">
+                <input type="number" id="questionLimitInput" min="1" value="21">
             </div>
 
             <div class="setup-group">
@@ -180,10 +180,8 @@
         <footer class="tcs-footer">
             <button id="clearResponseBtn" class="tcs-btn tcs-btn-gray">🧹 Clear Response</button>
             <button id="reviewBtn" class="tcs-btn tcs-btn-orange">🟣 Mark for Review & Next</button>
-            
             <button id="practiceCheckBtn" class="tcs-btn tcs-btn-blue hidden" style="margin-left: auto;">🔎 Check Answer</button>
             <button id="submitBtn" class="tcs-btn tcs-btn-green" style="margin-left: auto;">Save & Next ➡️</button>
-            
             <button id="finishExamBtn" class="tcs-btn tcs-btn-blue hidden">🔴 Submit Test</button>
         </footer>
     </div>
