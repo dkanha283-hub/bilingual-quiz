@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RRB Online Exam Console (TCS iON Sync Pro)</title>
+    <title>RRB Online Exam Console (TCS iON Mock Ultra)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -33,12 +33,27 @@
             </div>
 
             <div class="setup-group">
-                <label>📁 Select Question Bank:</label>
-                <input type="file" id="fileUploader" accept=".json" style="margin-bottom:10px;">
+                <label>📁 Select Question Bank Source:</label>
+                <select id="bankSourceDropdown" style="margin-bottom: 10px; padding: 10px; border-radius: 4px; border: 1px solid #cbd5e0;">
+                    <option value="default_percentage">Default Pre-loaded: Percentage Sheet (61 Questions)</option>
+                    <option value="local_upload">Upload custom JSON file from device...</option>
+                </select>
+                
+                <div id="localFilePickerWrapper" class="hidden" style="margin-bottom: 10px;">
+                    <input type="file" id="fileUploader" accept=".json">
+                </div>
                 
                 <div class="bank-list-title">Active Test Repositories on Cloud / UI:</div>
                 <div id="cloudBankFilesContainer" class="cloud-files-list">
-                    <div style="color:#a0aec0; font-size:0.85rem; text-align:center; padding:10px;">No cloud files synced. Upload locally or hook up token credentials above.</div>
+                    <div style="color:#2b6cb0; font-size:0.85rem; text-align:center; padding:10px; font-weight: bold;">✓ Percentage Sheet data preset is loaded by default.</div>
+                </div>
+            </div>
+
+            <div class="setup-group">
+                <label>🎯 Operation Assessment Mode:</label>
+                <div class="radio-row">
+                    <label><input type="radio" name="assessmentMode" value="exam" checked> Exam Mode (Results at end)</label>
+                    <label><input type="radio" name="assessmentMode" value="practice"> Practice Mode (Instant Answer Check)</label>
                 </div>
             </div>
             
@@ -60,9 +75,9 @@
             <div class="setup-group">
                 <label>🌐 Default Language Preference:</label>
                 <select id="langPrefSetup">
+                    <option value="both">Bilingual (Both Stacked)</option>
                     <option value="en">English Only</option>
                     <option value="hi">Hindi Only (हिंदी)</option>
-                    <option value="both">Bilingual (Both Stacked)</option>
                 </select>
             </div>
 
@@ -74,7 +89,7 @@
                 </div>
             </div>
 
-            <button id="startExamBtn" class="tcs-btn tcs-btn-blue" disabled>🔒 Start Exam</button>
+            <button id="startExamBtn" class="tcs-btn tcs-btn-blue">🔒 Start Exam / Practice</button>
         </div>
     </div>
 
@@ -128,15 +143,17 @@
                     <div class="tcs-lang-dropdown-wrapper">
                         <label for="consoleLangPref">View In: </label>
                         <select id="consoleLangPref">
+                            <option value="both">Bilingual</option>
                             <option value="en">English</option>
                             <option value="hi">Hindi</option>
-                            <option value="both">Bilingual</option>
                         </select>
                     </div>
                 </div>
 
                 <div id="questionDisplayContainer" class="tcs-question-box"></div>
                 <div id="optionsContainer" class="tcs-options-container"></div>
+                
+                <div id="practiceFeedbackBox" class="hidden practice-feedback-card"></div>
             </main>
 
             <aside class="tcs-right-panel">
@@ -163,7 +180,10 @@
         <footer class="tcs-footer">
             <button id="clearResponseBtn" class="tcs-btn tcs-btn-gray">🧹 Clear Response</button>
             <button id="reviewBtn" class="tcs-btn tcs-btn-orange">🟣 Mark for Review & Next</button>
+            
+            <button id="practiceCheckBtn" class="tcs-btn tcs-btn-blue hidden" style="margin-left: auto;">🔎 Check Answer</button>
             <button id="submitBtn" class="tcs-btn tcs-btn-green" style="margin-left: auto;">Save & Next ➡️</button>
+            
             <button id="finishExamBtn" class="tcs-btn tcs-btn-blue hidden">🔴 Submit Test</button>
         </footer>
     </div>
