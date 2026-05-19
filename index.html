@@ -3,27 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RRB Online Exam Console (TCS iON Mock Pro)</title>
+    <title>RRB Online Exam Console (TCS iON Sync Pro)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <div id="recoveryModal" class="hidden modal-overlay">
+        <div class="modal-card">
+            <h3>⚠️ Interrupted Session Detected</h3>
+            <p>We found an unfinished exam session on your device. Would you like to resume from where you left off?</p>
+            <div class="modal-actions">
+                <button id="resumeConfirmBtn" class="tcs-btn tcs-btn-green">Yes, Resume Exam</button>
+                <button id="resumeRejectBtn" class="tcs-btn tcs-btn-gray">No, Start Fresh</button>
+            </div>
+        </div>
+    </div>
 
     <div id="configScreen" class="setup-container">
         <div class="setup-card">
             <h2>⚙️ RRB Exam Console - Setup Panel</h2>
             <hr>
+
+            <div class="setup-group github-config-box">
+                <label>⛓️ GitHub API Sync Configurations (Optional):</label>
+                <input type="password" id="ghTokenInput" placeholder="Enter GitHub Personal Access Token (PAT)">
+                <input type="text" id="ghRepoInput" placeholder="Username/Repository (e.g., dkanha283-hub/bilingual-quiz)" value="dkanha283-hub/bilingual-quiz">
+                <button id="connectGhBtn" class="tcs-btn tcs-btn-gray" style="margin-top:5px; padding:6px;">Connect & Fetch Shared Banks</button>
+            </div>
+
             <div class="setup-group">
-                <label for="fileUploader"><strong>1. Select Question Bank (JSON):</strong></label>
-                <input type="file" id="fileUploader" accept=".json">
+                <label>📁 Select Question Bank:</label>
+                <input type="file" id="fileUploader" accept=".json" style="margin-bottom:10px;">
+                
+                <div class="bank-list-title">Active Test Repositories on Cloud / UI:</div>
+                <div id="cloudBankFilesContainer" class="cloud-files-list">
+                    <div style="color:#a0aec0; font-size:0.85rem; text-align:center; padding:10px;">No cloud files synced. Upload locally or hook up token credentials above.</div>
+                </div>
             </div>
             
             <div class="setup-group">
-                <label for="questionLimitInput"><strong>2. Number of Questions to Solve:</strong></label>
+                <label for="questionLimitInput">📊 Number of Questions to Solve:</label>
                 <input type="number" id="questionLimitInput" min="1" value="20">
             </div>
 
             <div class="setup-group">
-                <label><strong>3. Timer Operation Mode:</strong></label>
+                <label>⏱️ Timer Operation Mode:</label>
                 <div class="radio-row">
                     <label><input type="radio" name="timerMode" value="perQuestion" checked> Per-Question Clock</label>
                     <label><input type="radio" name="timerMode" value="overall"> Total Exam Clock</label>
@@ -33,7 +57,7 @@
             </div>
 
             <div class="setup-group">
-                <label><strong>4. Default Language Preference:</strong></label>
+                <label>🌐 Default Language Preference:</label>
                 <select id="langPrefSetup">
                     <option value="en">English Only</option>
                     <option value="hi">Hindi Only (हिंदी)</option>
@@ -42,7 +66,7 @@
             </div>
 
             <div class="setup-group">
-                <label><strong>5. Question Sequencing:</strong></label>
+                <label>🔀 Question Sequencing:</label>
                 <div class="radio-row">
                     <label><input type="radio" name="orderType" value="sequential" checked> Sequential</label>
                     <label><input type="radio" name="orderType" value="shuffled"> Shuffled Order</label>
@@ -75,22 +99,24 @@
             <input type="text" id="calcDisplay" readonly value="0">
             <div class="calc-buttons-grid">
                 <button onclick="pressCalcKey('C')" class="btn-c">C</button>
+                <button onclick="pressCalcKey('SQRT')">√</button>
+                <button onclick="pressCalcKey('%')">%</button>
                 <button onclick="pressCalcKey('/')">/</button>
-                <button onclick="pressCalcKey('*')">*</button>
-                <button onclick="pressCalcKey('-')">-</button>
                 <button onclick="pressCalcKey('7')">7</button>
                 <button onclick="pressCalcKey('8')">8</button>
                 <button onclick="pressCalcKey('9')">9</button>
-                <button onclick="pressCalcKey('+')">+</button>
+                <button onclick="pressCalcKey('*')">*</button>
                 <button onclick="pressCalcKey('4')">4</button>
                 <button onclick="pressCalcKey('5')">5</button>
                 <button onclick="pressCalcKey('6')">6</button>
-                <button onclick="pressCalcKey('.')">.</button>
+                <button onclick="pressCalcKey('-')">-</button>
                 <button onclick="pressCalcKey('1')">1</button>
                 <button onclick="pressCalcKey('2')">2</button>
                 <button onclick="pressCalcKey('3')">3</button>
-                <button onclick="pressCalcKey('=')" class="btn-equal" style="grid-row: span 2">=</button>
-                <button onclick="pressCalcKey('0')" style="grid-column: span 3">0</button>
+                <button onclick="pressCalcKey('+')">+</button>
+                <button onclick="pressCalcKey('0')" style="grid-column: span 2">0</button>
+                <button onclick="pressCalcKey('.')">.</button>
+                <button onclick="pressCalcKey('=')" class="btn-equal">=</button>
             </div>
         </div>
 
