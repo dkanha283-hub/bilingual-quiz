@@ -11,7 +11,8 @@ let globalCountdown = null;
 let timerMode = "perQuestion"; 
 let totalDurationConfig = 60;
 let overallTimeLeft = 0; 
-let operationMode = "exam"; // Practice Mode vs Exam Mode switcher parameter
+let operationMode = "exam"; 
+let hasCheckedAnswer = false; 
 
 // GitHub Sync Management States
 let ghToken = "";
@@ -28,7 +29,7 @@ const defaultPercentageSheetQuestions = [
     {"question_number":6,"text_en":"2% of 50% of a number is what percentage of that number?","text_hi":"किसी संख्या के 50% का 2% उस संख्या का कितना प्रतिशत होगा?","exam":null,"options":{"A":"96","B":"no_option_b","C":"0.96","D":"no_option_d"},"correct_answer":"C"},
     {"question_number":7,"text_en":"Two numbers are respectively 30% and 18% more than a third number. The ratio of the two numbers is:","text_hi":"दो संख्याएं एक तीसरी संख्या से क्रमशः 30% और 18% अधिक हैं। उन दोनों संख्याओं का अनुपात ज्ञात कीजिए।","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"55:64","B":"58:63","C":"65:59","D":"73:74"},"correct_answer":"C"},
     {"question_number":8,"text_en":"5% of a = b, then b% of 20 is the same as","text_hi":"a का 5% = b तो 20 का b% के बराबर होगा।","exam":null,"options":{"A":"20% of a/2","B":"50% of a/20","C":"50% of a/2","D":"20% of a/20"},"correct_answer":"C"},
-    {"question_number":9,"text_en":"If x% of a is the same as y% of b, then z% of b will be","text_hi":"यदि a का x%, b के y% के समान है, तो b का z% होगा","exam":null,"options":{"A":"(yz/x)% of a","B">(zx/y)% of a","C":"(xy/z)% of a","D":"(y/z)% of a"},"correct_answer":"D"},
+    {"question_number":9,"text_en":"If x% of a is the same as y% of b, then z% of b will be","text_hi":"यदि a का x%, b के y% के समान है, तो b का z% होगा","exam":null,"options":{"A":"(yz/x)% of a","B":"(zx/y)% of a","C":"(xy/z)% of a","D":"(y/z)% of a"},"correct_answer":"D"},
     {"question_number":10,"text_en":"If 85% of (x-y) = 25% of (x+y) Then y is what percentage of x?","text_hi":"यदि (x-y) का 85% = (x+y) का 25% है, तो y, x का कितना प्रतिशत है?","exam":"SSC GD 2023","options":{"A":"51_4/11%","B":"54_6/11%","C":"55_1/11%","D":"58_3/11%"},"correct_answer":"B"},
     {"question_number":11,"text_en":"Two numbers A and B are such that the sum of 8% of A and 5% of B is three-fifth of the sum of 12% of A and 10% of B. The ratio of A and B is:","text_hi":"A और B दो संख्याए इस प्रकार हैं कि A के 8% और B के 5% का योग, A के 12% और B के 10% के योग का 3/5 भाग है। A और B का अनुपात कितना है?","exam":null,"options":{"A":"6:11","B":"11:6","C":"11:6","D":"no_option_d"},"correct_answer":"B"},
     {"question_number":12,"text_en":"The population of a town is increased from 60,000 to 61,050. How much is the percentage increase?","text_hi":"किसी कस्बे की जनसंख्या 60,000 से बढ़कर 61,050 हो जाती है। वृद्धि प्रतिशत कितना है?","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"1.65%","B":"1.55%","C":"1.85%","D":"1.75%"},"correct_answer":"B"},
@@ -41,7 +42,7 @@ const defaultPercentageSheetQuestions = [
     {"question_number":19,"text_en":"A number when increased by 40% gives 3570. The number is:","text_hi":"एक संख्या में 40% की वृद्धि करने पर 3570 प्राप्त होता है। वह संख्या ______ है।","exam":null,"options":{"A":"2550","B":"7650","C":"1275","D":"5100"},"correct_answer":"B"},
     {"question_number":20,"text_en":"A number, when decreased by 7%, gives 3720. The number is:","text_hi":"किसी संख्या में 7% की कमी करने पर 3720 प्राप्त होता है। वह संख्या ज्ञात कीजिए।","exam":"RRB NTPC GRADUATE LEVEL 2025","options":{"A":"2000","B":"4000","C":"12000","D":"8000"},"correct_answer":"A"},
     {"question_number":60,"text_en":"If the radius of the cylinder is decreased by 20%, then by how much percent the height must be increased, so that the volume of the cylinder remains same?","text_hi":"यदि बेलन की त्रिज्या में 20% की कमी की जाती है, तो उसकी ऊँचाई में कितने प्रतिशत की वृद्धि करनी चाहिए ताकि बेलन का आयतन समान रहे?","exam":"CGL 2017","options":{"A":"44","B":"36.25","C":"56.25","D":"62.5"},"correct_answer":"C"}
-]; // Trimmed for runtime spacing safely inside script blocks
+];
 
 // --- DOM Nodes Layout Selectors Bindings ---
 const bankSourceDropdown = document.getElementById('bankSourceDropdown');
@@ -62,12 +63,10 @@ const optionsContainer = document.getElementById('optionsContainer');
 const paletteGrid = document.getElementById('paletteGrid');
 const consoleLangPref = document.getElementById('consoleLangPref');
 const cloudBankFilesContainer = document.getElementById('cloudBankFilesContainer');
-const apiStatusLog = document.getElementById('apiStatusLog');
 const practiceFeedbackBox = document.getElementById('practiceFeedbackBox');
 
 // --- RESUMABLE AUTO-SAVE ENGINE ---
 window.addEventListener('DOMContentLoaded', () => {
-    // Defaults: Pre-seed system memory using our custom embedded percentage list array
     fileQuestions = defaultPercentageSheetQuestions;
     questionLimitInput.max = fileQuestions.length;
     questionLimitInput.value = fileQuestions.length;
@@ -78,7 +77,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Switch dropdown selector listener to toggle custom local text file input picker layout blocks
 bankSourceDropdown.addEventListener('change', (e) => {
     if (e.target.value === 'local_upload') {
         localFilePickerWrapper.classList.remove('hidden');
@@ -184,7 +182,6 @@ async function syncCloudRepositoryBankList() {
         const jsonFiles = Array.isArray(files) ? files.filter(f => f.name.endsWith('.json')) : [];
 
         if(jsonFiles.length > 0) {
-            // Append matching items onto option nodes dynamically
             bankSourceDropdown.innerHTML = `<option value="default_percentage">Default Pre-loaded: Percentage Sheet (61 Questions)</option><option value="local_upload">Upload custom JSON file from device...</option>`;
             jsonFiles.forEach(file => {
                 const opt = document.createElement('option');
@@ -193,7 +190,6 @@ async function syncCloudRepositoryBankList() {
                 bankSourceDropdown.appendChild(opt);
             });
             
-            // Re-setup change tracker to intercept cloud path options item pulls
             bankSourceDropdown.onchange = (e) => {
                 if(e.target.value.startsWith('cloud_')) {
                     localFilePickerWrapper.classList.add('hidden');
@@ -266,13 +262,12 @@ startExamBtn.onclick = () => {
         examQuestions.forEach((_, idx) => { questionTimers[idx] = totalDurationConfig; });
     }
     
-    // UI Layout transformations adaptations
     if (operationMode === "practice") {
         document.getElementById('submitBtn').textContent = "Next Question ➡️";
         document.getElementById('practiceCheckBtn').classList.remove('hidden');
     } else {
         document.getElementById('submitBtn').textContent = "Save & Next ➡️";
-        document.getElementById('practiceCheckBtn').classList.add('hidden');
+        document.getElementById('finishExamBtn').classList.add('hidden');
     }
     
     configScreen.classList.add('hidden');
@@ -324,7 +319,8 @@ function updatePaletteMetrics() {
 
 function renderQuestionIndex() {
     if (timerMode === 'perQuestion') clearInterval(globalCountdown);
-    practiceFeedbackBox.classList.add('hidden'); // Clear instant response notification box fields safely
+    practiceFeedbackBox.classList.add('hidden'); 
+    hasCheckedAnswer = false; 
     
     document.getElementById('questionNumTitle').textContent = `Question No. ${currentIndex + 1}`;
     document.getElementById('consoleExamTitle').textContent = examQuestions[currentIndex].exam || "RRB ONLINE EXAMINATION MASTER";
@@ -368,6 +364,8 @@ function populateOptionsGrid() {
         
         row.innerHTML = `<input type="radio" name="opt" value="${key}" ${savedAnswer && savedAnswer.selected === key ? 'checked' : ''}> <strong>(${key})</strong> ${val}`;
         row.onclick = () => {
+            if (operationMode === "practice" && hasCheckedAnswer) return;
+
             row.querySelector('input').checked = true;
             document.querySelectorAll('.tcs-option-row').forEach(r => r.classList.remove('selected'));
             row.classList.add('selected');
@@ -379,7 +377,6 @@ function populateOptionsGrid() {
     });
 }
 
-// --- UPGRADED: INSTANT FEEDBACK PRACTICE CHECK MECHANICS BUTTON HOOK ---
 document.getElementById('practiceCheckBtn').onclick = () => {
     const selectedInput = document.querySelector('input[name="opt"]:checked');
     if (!selectedInput) { alert("Please pick an input option first."); return; }
@@ -390,6 +387,12 @@ document.getElementById('practiceCheckBtn').onclick = () => {
     practiceFeedbackBox.className = "practice-feedback-card " + (isCorrect ? "feedback-correct" : "feedback-wrong");
     practiceFeedbackBox.innerHTML = isCorrect ? "✓ Correct Answer! Well done. +1 Mark." : `✗ Incorrect Response. Target Answer Key is option (${q.correct_answer.toUpperCase()}).`;
     practiceFeedbackBox.classList.remove('hidden');
+    
+    hasCheckedAnswer = true; 
+    userAnswers[currentIndex] = { selected: selectedInput.value, status: 'answered' };
+    questionStatuses[currentIndex] = 'answered';
+    updatePaletteMetrics();
+    commitCurrentSessionProgressToCache();
 };
 
 function initiatePerQuestionTimerLoop() {
@@ -453,12 +456,22 @@ function jumpToQuestionIndex(targetIdx) {
 
 document.getElementById('submitBtn').onclick = () => {
     const selectedInput = document.querySelector('input[name="opt"]:checked');
-    if (selectedInput) {
+    
+    if (operationMode === "practice") {
+        if (selectedInput && !hasCheckedAnswer) {
+            alert("Please click 'Check Answer' first to verify your selection before moving to the next question.");
+            return;
+        }
+        if (!selectedInput) {
+            userAnswers[currentIndex] = { selected: null, status: 'skipped' };
+            questionStatuses[currentIndex] = 'notanswered';
+        }
+    } else {
+        if (!selectedInput) { alert("Please choose an answer."); return; }
         userAnswers[currentIndex] = { selected: selectedInput.value, status: 'answered' };
         questionStatuses[currentIndex] = 'answered';
-    } else if (operationMode === "exam") {
-        alert("Please choose an option or click Skip/Review to jump ahead."); return;
     }
+    
     advanceNextExamIndex();
 };
 
@@ -470,6 +483,8 @@ document.getElementById('reviewBtn').onclick = () => {
 };
 
 document.getElementById('clearResponseBtn').onclick = () => {
+    if (operationMode === "practice" && hasCheckedAnswer) return; 
+
     userAnswers[currentIndex] = null;
     if (questionStatuses[currentIndex] === 'answered' || questionStatuses[currentIndex] === 'review') {
         questionStatuses[currentIndex] = 'notanswered';
