@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RRB Online Exam Console (TCS iON Mock Ultra)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RRB Online Exam Console (TCS Mobile Max)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,14 +21,14 @@
 
     <div id="configScreen" class="setup-container">
         <div class="setup-card">
-            <h2>⚙️ RRB Exam Console - Setup Panel</h2>
+            <h2>⚙️ RRB Exam Console - Setup</h2>
             <hr>
 
             <div class="setup-group github-config-box">
                 <label>⛓️ GitHub API Sync Configurations (Optional):</label>
                 <input type="password" id="ghTokenInput" placeholder="Enter GitHub Token (ghp_...)">
                 <input type="text" id="ghRepoInput" placeholder="Username/Repository" value="dkanha283-hub/bilingual-quiz">
-                <button id="connectGhBtn" class="tcs-btn tcs-btn-gray" style="margin-top:5px; padding:8px; background: #34495e; color: white;">Connect & Fetch Shared Banks</button>
+                <button id="connectGhBtn" class="tcs-btn tcs-btn-gray" style="margin-top:5px; padding:10px; background: #34495e; color: white;">Connect & Fetch Shared Banks</button>
                 <div id="apiStatusLog" style="margin-top: 8px; font-size: 0.8rem; color: #718096; font-family: monospace; background: #edf2f7; padding: 4px; border-radius: 4px; word-break: break-all;">Status: Idle (Using Local Cache Modality)</div>
             </div>
 
@@ -52,8 +52,8 @@
             <div class="setup-group">
                 <label>🎯 Operation Assessment Mode:</label>
                 <div class="radio-row">
-                    <label><input type="radio" name="assessmentMode" value="exam" checked> Exam Mode (Results at end)</label>
-                    <label><input type="radio" name="assessmentMode" value="practice"> Practice Mode (Instant Answer Check)</label>
+                    <label><input type="radio" name="assessmentMode" value="exam" checked> Exam Mode</label>
+                    <label><input type="radio" name="assessmentMode" value="practice"> Practice Mode</label>
                 </div>
             </div>
             
@@ -96,12 +96,12 @@
     <div id="examConsole" class="hidden tcs-main-grid">
         <header class="tcs-header">
             <div class="tcs-logo-area">
-                <span class="exam-title-text" id="consoleExamTitle">RRB ONLINE EXAMINATION</span>
+                <span class="exam-title-text" id="consoleExamTitle">RRB EXAM</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <button id="calcToggleBtn" class="calc-toggle-btn">🧮 Calculator</button>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button id="calcToggleBtn" class="calc-toggle-btn">🧮 Calc</button>
+                <button id="paletteToggleBtn" class="palette-toggle-btn">📋 Palette</button>
                 <div class="tcs-timer-box">
-                    <span class="timer-label">Time Left:</span>
                     <span id="timerText" class="timer-countdown">00:00</span>
                 </div>
             </div>
@@ -110,7 +110,7 @@
         <div id="floatingCalculator" class="hidden mini-calculator-pad">
             <div class="calc-header">
                 <span>Calculator / गणक</span>
-                <button id="calcCloseBtn" style="background:none; border:none; color:white; cursor:pointer; font-weight:bold;">X</button>
+                <button id="calcCloseBtn" style="background:none; border:none; color:white; cursor:pointer; font-weight:bold; padding: 4px;">X</button>
             </div>
             <input type="text" id="calcDisplay" readonly value="0">
             <div class="calc-buttons-grid">
@@ -141,7 +141,6 @@
                 <div class="question-header-row">
                     <span id="questionNumTitle" class="q-number-title">Question No. 1</span>
                     <div class="tcs-lang-dropdown-wrapper">
-                        <label for="consoleLangPref">View In: </label>
                         <select id="consoleLangPref">
                             <option value="both">Bilingual</option>
                             <option value="en">English</option>
@@ -152,24 +151,27 @@
 
                 <div id="questionDisplayContainer" class="tcs-question-box"></div>
                 <div id="optionsContainer" class="tcs-options-container"></div>
-                
                 <div id="practiceFeedbackBox" class="hidden practice-feedback-card"></div>
             </main>
 
-            <aside class="tcs-right-panel">
+            <aside id="rightPaletteSidebar" class="tcs-right-panel mobile-hidden">
+                <div class="palette-drawer-header">
+                    <span>Navigation Panel</span>
+                    <button id="paletteCloseBtn" class="palette-close-cross">×</button>
+                </div>
                 <div class="candidate-info">
                     <div class="dummy-avatar">👤</div>
                     <div class="candidate-details">
                         <strong>John Doe</strong>
-                        <span style="font-size:0.8rem; color:#718096;">Subject: Mathematics</span>
+                        <span style="font-size:0.75rem; color:#64748b;">Subject: Mathematics</span>
                     </div>
                 </div>
 
                 <div class="status-legend-grid">
-                    <div class="legend-item"><span class="badge-box badge-answered" id="legendAnsweredCount">0</span> Answered</div>
-                    <div class="legend-item"><span class="badge-box badge-notanswered" id="legendNotAnsweredCount">0</span> Not Answered</div>
-                    <div class="legend-item"><span class="badge-box badge-notvisited" id="legendNotVisitedCount">0</span> Not Visited</div>
-                    <div class="legend-item"><span class="badge-box badge-review" id="legendReviewCount">0</span> For Review</div>
+                    <div class="legend-item"><span class="badge-box badge-answered" id="legendAnsweredCount">0</span> Ans</div>
+                    <div class="legend-item"><span class="badge-box badge-notanswered" id="legendNotAnsweredCount">0</span> N-Ans</div>
+                    <div class="legend-item"><span class="badge-box badge-notvisited" id="legendNotVisitedCount">0</span> N-Vis</div>
+                    <div class="legend-item"><span class="badge-box badge-review" id="legendReviewCount">0</span> Rev</div>
                 </div>
 
                 <div class="palette-title">Question Palette :</div>
@@ -178,11 +180,11 @@
         </div>
 
         <footer class="tcs-footer">
-            <button id="clearResponseBtn" class="tcs-btn tcs-btn-gray">🧹 Clear Response</button>
-            <button id="reviewBtn" class="tcs-btn tcs-btn-orange">🟣 Mark for Review & Next</button>
-            <button id="practiceCheckBtn" class="tcs-btn tcs-btn-blue hidden" style="margin-left: auto;">🔎 Check Answer</button>
+            <button id="clearResponseBtn" class="tcs-btn tcs-btn-gray">🧹 Clear</button>
+            <button id="reviewBtn" class="tcs-btn tcs-btn-orange">🟣 Review</button>
+            <button id="practiceCheckBtn" class="tcs-btn tcs-btn-blue hidden" style="margin-left: auto;">🔎 Check</button>
             <button id="submitBtn" class="tcs-btn tcs-btn-green" style="margin-left: auto;">Save & Next ➡️</button>
-            <button id="finishExamBtn" class="tcs-btn tcs-btn-blue hidden">🔴 Submit Test</button>
+            <button id="finishExamBtn" class="tcs-btn tcs-btn-blue hidden">🔴 Submit</button>
         </footer>
     </div>
 
@@ -201,10 +203,10 @@
                 <div class="bar-progress-row"><span class="lbl">Review/Skipped:</span><div class="bar-outer"><div id="barSkipped" class="bar-inner bg-review"></div></div></div>
             </div>
             
-            <button id="restartBtn" class="tcs-btn tcs-btn-blue" style="margin-top:20px;">🔄 Load New Exam Module</button>
+            <button id="restartBtn" class="tcs-btn tcs-btn-blue" style="margin-top:20px; width: 100%;">🔄 Load New Exam</button>
         </div>
 
-        <h3>📝 Detailed Question Paper Audit Trail</h3>
+        <h3>📝 Detailed Question Audit Trail</h3>
         <div id="reviewAuditTrailContainer" class="audit-trail-wrapper"></div>
     </div>
 
